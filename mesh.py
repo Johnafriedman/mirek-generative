@@ -15,7 +15,7 @@ import random
 
 import sys
 
-from generative.utilities import make_mask, make_transparent
+from generative.utilities import make_mask, make_transparent, draw_mesh
 from generative.transforms import create_randomized_aligned_mesh
 
 
@@ -24,11 +24,11 @@ test_mesh = False
 
 
 use_mask = True
-layers = 1
-files = 1
+layers = 3
+files = 3
 radius = 5
 
-folder = '/content/' if IN_COLAB else './'
+source_folder = '/content/' if IN_COLAB else 'input/'
 
 if test_mesh:
   image_path = 'grid_image.png'
@@ -55,11 +55,9 @@ def invert(image):
   # Invert the circular region of the image
   inverted_image = ImageChops.invert(image)
   image.paste(inverted_image, mask=mask)
-
-  blurred_image.paste(cropped,box, mask)
   
 # return the blurred image
-  return(blurred_image)
+  return(image)
   
 
 def blur(image, x, y, width, height, radius, dx, dy):
@@ -94,11 +92,13 @@ def blur(image, x, y, width, height, radius, dx, dy):
 
 
 # Open the image
-image = Image.open(image_path)
+input_path = f"input/{image_path}"
+print(input_path)
+image = Image.open(input_path)
 im = make_transparent(image, 128)
 
 for file in range(files):
-  image = Image.open(image_path)
+  image = Image.open(input_path)
   im = make_transparent(image, 128)
   for _ in range(layers):
     # Apply the mesh transform
@@ -114,7 +114,7 @@ for file in range(files):
   if test_mesh:
     draw_mesh(mesh, image)
     
-  filename = f"{folder}mesh_image{file}.png"
+  filename = f"output/mesh_image{file}.png"
   image.save(filename)
   image.show(filename)
 
