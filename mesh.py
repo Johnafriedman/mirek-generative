@@ -24,8 +24,8 @@ test_mesh = False
 
 
 use_mask = True
-layers = 3
-files = 3
+layers = 1
+files = 1
 radius = 5
 
 source_folder = '/content/' if IN_COLAB else 'input/'
@@ -60,16 +60,13 @@ def invert(image):
   return(image)
   
 
-def blur(image, x, y, width, height, radius, dx, dy):
+def blur(image, x, y, width, height, radius, fill, outline, outline_width):
 
   # Apply Gaussian Blur
 
-  width = int(image.width/3)
-  height = int(image.height/3)# Create a new image for the mask with the same dimensions and a black background
-
   mask = Image.new('L', (width, height), 0)
 
-  # Create a draw object for the mask
+# Create a draw object for the mask
   draw = ImageDraw.Draw(mask)
 
   # Define the bounding box for the ellipse
@@ -79,28 +76,37 @@ def blur(image, x, y, width, height, radius, dx, dy):
   draw.ellipse(bounding_box, fill=255)
 
   # Apply the mask to the image
-##  image.putalpha(mask)
+  # image.putalpha(mask)
   
   cropped = image.crop((x,y,x+width,y+height))
-  blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
 
-  box = (x,y)
-  image.paste(cropped,box, mask)
-  
+  blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
+  overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
+  odraw = ImageDraw.Draw(overlay)    
+  odraw.ellipse(bounding_box, fill, outline, outline_width)
+  blurred_image = Image.alpha_composite(blurred_image, overlay)
+
+  filename = f"output/blurred.png"
+  overlay.save(filename)
+  overlay.show(filename)
+
+  image.paste(blurred_image,(dx,dy), mask)
+
+
+
 # return the blurred image
   return(image)
 
 
 # Open the image
 input_path = f"input/{image_path}"
-print(input_path)
-image = Image.open(input_path)
-im = make_transparent(image, 128)
 
-for file in range(files):
+for file in range(0,files):
   image = Image.open(input_path)
+  image = image.convert('RGBA')
+
   im = make_transparent(image, 128)
-  for _ in range(layers):
+  for _ in range(0, layers):
     # Apply the mesh transform
     #mesh = make_mesh(3,im)
     mesh = create_randomized_aligned_mesh(3,2,im.width,im.height)
@@ -109,7 +115,14 @@ for file in range(files):
     mask = out if use_mask else None
     #draw the transformed image on the original using a mask
     image.paste(out, None, mask)
-    image = blur(image, 0, 0, image.width/3, image.height/3, 5, 0, 0)
+
+    width = int(image.width/3)
+    height = int(image.height/3)
+    dx = 0
+    dy = 0
+    bounding_box=(0,0,width,height)
+    out = blur(image, 0, 0, width, height, 5, (0,255,0,128), (0,0,0,255), 10)
+    image.paste(out, (dx,dy), out)
 
   if test_mesh:
     draw_mesh(mesh, image)
