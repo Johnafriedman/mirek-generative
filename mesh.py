@@ -24,9 +24,28 @@ test_mesh = False
 
 
 use_mask = True
-layers = 1
+layers = 2
 files = 1
+shapes = 4
 radius = 5
+
+max_fill_alpha = 255
+min_fill_alpha = 0
+max_fill_red = 255
+min_fill_red = 0
+max_fill_green = 255
+min_fill_green = 0
+max_fill_blue = 255
+min_fill_blue = 0
+
+max_outline_alpha = 255
+min_outline_alpha = 0
+max_outline_red = 255
+min_outline_red = 0
+max_outline_green = 255
+min_outline_green = 0
+max_outline_blue = 255
+min_outline_blue = 0
 
 source_folder = '/content/' if IN_COLAB else 'input/'
 
@@ -85,17 +104,12 @@ def blur(image, x, y, width, height, radius, fill, outline, outline_width):
   odraw = ImageDraw.Draw(overlay)    
   odraw.ellipse(bounding_box, fill, outline, outline_width)
   blurred_image = Image.alpha_composite(blurred_image, overlay)
-
-  filename = f"output/blurred.png"
-  overlay.save(filename)
-  overlay.show(filename)
-
-  image.paste(blurred_image,(dx,dy), mask)
+  # image.paste(blurred_image,(dx,dy), mask)
 
 
 
 # return the blurred image
-  return(image)
+  return(blurred_image, mask)
 
 
 # Open the image
@@ -104,6 +118,11 @@ input_path = f"input/{image_path}"
 for file in range(0,files):
   image = Image.open(input_path)
   image = image.convert('RGBA')
+
+  min_width = image.width * .1
+  min_height = image.height * .1
+  max_width = image.width * .8
+  max_height = image.height * .8
 
   im = make_transparent(image, 128)
   for _ in range(0, layers):
@@ -116,13 +135,32 @@ for file in range(0,files):
     #draw the transformed image on the original using a mask
     image.paste(out, None, mask)
 
-    width = int(image.width/3)
-    height = int(image.height/3)
-    dx = 0
-    dy = 0
-    bounding_box=(0,0,width,height)
-    out = blur(image, 0, 0, width, height, 5, (0,255,0,128), (0,0,0,255), 10)
-    image.paste(out, (dx,dy), out)
+    for shape in range(0,2):
+
+      width = int(random.uniform(min_width, max_width))
+      height = int(random.uniform(min_height, max_height))
+      dx = int(random.uniform(min_width, max_width))
+      dy = int(random.uniform(min_height, max_height))
+
+      fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
+
+      outline_alpha = int(random.uniform(min_outline_alpha, max_outline_alpha))     
+    
+      fill_red = int(random.uniform(min_fill_red, max_fill_red))
+
+      outline_red = int(random.uniform(min_outline_red, max_outline_red))   
+
+      fill_green = int(random.uniform(min_fill_green, max_fill_green))  
+
+      outline_green = int(random.uniform(min_outline_green, max_outline_green))   
+    
+      fill_blue = int(random.uniform(min_fill_blue, max_fill_blue))
+
+      outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
+
+      bounding_box=(0,0,width,height)
+      (out, mask) = blur(image, 0, 0, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 10)
+      image.paste(out, (dx,dy), mask)
 
   if test_mesh:
     draw_mesh(mesh, image)
