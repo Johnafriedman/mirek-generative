@@ -121,8 +121,13 @@ for file in range(0,files):
 
   min_width = image.width * .1
   min_height = image.height * .1
-  max_width = image.width * .8
-  max_height = image.height * .8
+  max_width = image.width * .3
+  max_height = image.height * .3
+
+  min_dx = image.width * .1
+  min_dy = image.height * .1
+  max_dx = image.width * .8
+  max_dy = image.height * .8
 
   im = make_transparent(image, 128)
   for _ in range(0, layers):
@@ -135,12 +140,14 @@ for file in range(0,files):
     #draw the transformed image on the original using a mask
     image.paste(out, None, mask)
 
-    for shape in range(0,2):
+    for shape in range(0,shapes):
 
       width = int(random.uniform(min_width, max_width))
       height = int(random.uniform(min_height, max_height))
-      dx = int(random.uniform(min_width, max_width))
-      dy = int(random.uniform(min_height, max_height))
+      dx = int(random.uniform(min_dx, max_dx))
+      dy = int(random.uniform(min_dy, max_dy))
+      sx = int(random.uniform(min_dx, max_dx))
+      sy = int(random.uniform(min_dy, max_dy))
 
       fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
 
@@ -159,7 +166,7 @@ for file in range(0,files):
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
       bounding_box=(0,0,width,height)
-      (out, mask) = blur(image, 0, 0, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 10)
+      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 10)
       image.paste(out, (dx,dy), mask)
 
   if test_mesh:
