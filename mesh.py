@@ -25,7 +25,7 @@ test_mesh = False
 
 use_mask = True
 layers = 2
-files = 1
+files = 3
 shapes = 4
 radius = 5
 do_blur_prob = .4 
@@ -137,7 +137,7 @@ for file in range(0,files):
   for _ in range(0, layers):
     # Apply the mesh transform
     #mesh = make_mesh(3,im)
-    mesh = create_randomized_aligned_mesh(3,2,im.width,im.height)
+    mesh = create_randomized_aligned_mesh(3,4,im.width,im.height)
     # Create a new image with the mesh
     out = im.transform(im.size, MeshTransform(mesh))
     mask = out if use_mask else None
@@ -170,7 +170,7 @@ for file in range(0,files):
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
       bounding_box=(0,0,width,height)
-      do_blur = random() > do_blur_prob
+      do_blur = random.random() > do_blur_prob
       (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2, do_blur)
       image.paste(out, (dx,dy), mask)
 
