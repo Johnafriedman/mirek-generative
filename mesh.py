@@ -24,11 +24,12 @@ test_mesh = False
 
 
 use_mask = True
-layers = 2
-files = 3
-shapes = 4
+layers = 3
+files = 1
+shapes = 5
 radius = 5
 do_blur_prob = .4 
+prob_shape_destination_equals_source = .5
 
 max_fill_alpha = 255
 min_fill_alpha = 0
@@ -92,21 +93,27 @@ def blur(image, x, y, width, height, radius, fill, outline, outline_width, do_bl
   # Define the bounding box for the ellipse
   bounding_box = (0, 0, width, height)  # Adjust as needed
 
-  # Draw the ellipse on the mask (white color fills the ellipse)
-  draw.ellipse(bounding_box, fill=255)
 
-  # Apply the mask to the image
-  # image.putalpha(mask)
-  
+  shapes = ["ellipse", "rectangle"]
+  i = int(random.uniform(0,2))
+  shape = shapes[i]
+  # Draw the ellipse on the mask (white color fills the ellipse)
+  getattr(draw, shape)(bounding_box, fill=255)
+
+
+
+  # Apply the mask to the image  
   cropped = image.crop((x,y,x+width,y+height))
 
   if do_blur:
     blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
   else:
     blurred_image = cropped
+
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
-  odraw = ImageDraw.Draw(overlay)    
-  odraw.ellipse(bounding_box, fill, outline, outline_width)
+  draw = ImageDraw.Draw(overlay)    
+  getattr(draw, shape)(bounding_box, fill, outline, outline_width)
+
   blurred_image = Image.alpha_composite(blurred_image, overlay)
   # image.paste(blurred_image,(dx,dy), mask)
 
@@ -123,8 +130,8 @@ for file in range(0,files):
   image = Image.open(input_path)
   image = image.convert('RGBA')
 
-  min_width = image.width * .1
-  min_height = image.height * .1
+  min_width = image.width * .05
+  min_height = image.height * .05
   max_width = image.width * .3
   max_height = image.height * .3
 
@@ -150,7 +157,7 @@ for file in range(0,files):
       height = int(random.uniform(min_height, max_height))
       sx = int(random.uniform(min_dx, max_dx))
       sy = int(random.uniform(min_dy, max_dy))
-      if random.random() > .5:
+      if random.random() > prob_shape_destination_equals_source:
         dx = int(random.uniform(min_dx, max_dx))
         dy = int(random.uniform(min_dy, max_dy))
       else:
