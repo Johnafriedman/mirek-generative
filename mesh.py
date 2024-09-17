@@ -28,6 +28,7 @@ layers = 2
 files = 1
 shapes = 4
 radius = 5
+do_blur_prob = .4 
 
 max_fill_alpha = 255
 min_fill_alpha = 0
@@ -79,7 +80,7 @@ def invert(image):
   return(image)
   
 
-def blur(image, x, y, width, height, radius, fill, outline, outline_width):
+def blur(image, x, y, width, height, radius, fill, outline, outline_width, do_blur):
 
   # Apply Gaussian Blur
 
@@ -99,7 +100,10 @@ def blur(image, x, y, width, height, radius, fill, outline, outline_width):
   
   cropped = image.crop((x,y,x+width,y+height))
 
-  blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
+  if do_blur:
+    blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
+  else:
+    blurred_image = cropped
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
   odraw = ImageDraw.Draw(overlay)    
   odraw.ellipse(bounding_box, fill, outline, outline_width)
@@ -166,7 +170,8 @@ for file in range(0,files):
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
       bounding_box=(0,0,width,height)
-      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 10)
+      do_blur = random() > do_blur_prob
+      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2, do_blur)
       image.paste(out, (dx,dy), mask)
 
   if test_mesh:
