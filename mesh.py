@@ -148,10 +148,14 @@ for file in range(0,files):
 
       width = int(random.uniform(min_width, max_width))
       height = int(random.uniform(min_height, max_height))
-      dx = int(random.uniform(min_dx, max_dx))
-      dy = int(random.uniform(min_dy, max_dy))
       sx = int(random.uniform(min_dx, max_dx))
       sy = int(random.uniform(min_dy, max_dy))
+      if random.random() > .5:
+        dx = int(random.uniform(min_dx, max_dx))
+        dy = int(random.uniform(min_dy, max_dy))
+      else:
+        dx = sx
+        dy = sy
 
       fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
 
