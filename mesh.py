@@ -12,6 +12,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageChops
 from PIL.ImageChops import invert
 
 from PIL.ImageTransform import MeshTransform
+
+import math
 import numpy as np
 import random
 
@@ -28,11 +30,11 @@ test_mesh = False
 use_mask = True
 max_mesh_width = 6
 max_mesh_height = 6
-max_layers = 1
-files = 1
-shapes = 15
+max_layers = 3
+files = 4
+shapes = 8
 radius = 5
-do_transform_prob = .8
+prob_do_transform = .8
 prob_shape_destination_equals_source = .5
 
 max_fill_alpha = 255
@@ -64,7 +66,33 @@ else:
 ##  image_path = 'myanmar_tm5_2004349_lrg.jpg'
 ##  image_path =  'PXL_20240906_152258909.jpg'
 
-def blur(image, x, y, width, height, radius, fill, outline, outline_width):
+import math
+
+def bounding_box_size(max_width, max_height, min_width, min_height):
+  """Calculates bounding box size based on inverse square correlation with probability.
+
+  Args:
+    probability: Probability value between 0 and 1.
+    max_width: Maximum width of the bounding box.
+    max_height: Maximum height of the bounding box.
+    min_width: Minimum width of the bounding box.
+    min_height: Minimum height of the bounding box.
+
+
+  Returns:
+    Bounding box size as a tuple (width, height).
+  """
+  r=random.random()
+  w_ratio = r**6
+
+  r=random.random()
+  h_ratio = r**6
+
+  width = min_width + w_ratio * (max_width - min_width)
+  height = min_height + h_ratio * (max_height - min_height)
+  return int(width), int(height)
+
+def transformed_shape(image, x, y, width, height, radius, fill, outline, outline_width):
 
 
   # Create a image mask for the cropped image
@@ -77,7 +105,7 @@ def blur(image, x, y, width, height, radius, fill, outline, outline_width):
   # Define the bounding box for the ellipse
   bounding_box = (0, 0, width, height)  # Adjust as needed
 
-  do_transform = random.random() < do_transform_prob
+  do_transform = random.random() < prob_do_transform
 
   shapes=["ellipse","rectangle"]
   shape = shapes[int(random.uniform(0,len(shapes)))]
@@ -122,10 +150,10 @@ for file in range(0,files):
   image = Image.open(input_path)
   image = image.convert('RGBA')
 
-  min_width = image.width * .05
-  min_height = image.height * .05
-  max_width = image.width * .3
-  max_height = image.height * .3
+  min_width = image.width * .1
+  min_height = image.height * .1
+  max_width = image.width * .4
+  max_height = image.height * .4
 
   min_dx = image.width * .1
   min_dy = image.height * .1
@@ -175,9 +203,11 @@ for file in range(0,files):
 
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
-      bounding_box=(0,0,width,height)
-      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
+      width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+      (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
       image.paste(out, (dx,dy), mask)
+
+      print(width,height)
 
   if test_mesh:
     draw_mesh(mesh, image)
