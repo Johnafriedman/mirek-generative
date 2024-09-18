@@ -8,8 +8,9 @@ Original file is located at
 """
 
 
-from PIL import Image, ImageDraw, ImageFilter, ImageChops
+from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageChops import invert
+from PIL.ImageOps import scale
 
 from PIL.ImageTransform import MeshTransform
 
@@ -34,7 +35,7 @@ max_layers = 3
 files = 4
 shapes = 8
 radius = 5
-prob_do_transform = .8
+prob_do_transform = .9
 prob_shape_destination_equals_source = .5
 
 max_fill_alpha = 255
@@ -110,8 +111,8 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
   shapes=["ellipse","rectangle"]
   shape = shapes[int(random.uniform(0,len(shapes)))]
 
-  transforms = ["blur", "invert"]
-  transform = transforms[int(random.uniform(0,len(shapes)))]
+  transforms = ["blur", "invert", "scale"]
+  transform = transforms[int(random.uniform(0,len(transforms)))]
 
   # Draw the ellipse on the mask (white color fills the ellipse)
   getattr(draw, shape)(bounding_box, fill=255)
@@ -127,8 +128,13 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
     elif transform == 'invert':
       red, green, blue, alpha = cropped.split()
       transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
+    elif transform == "scale":
+      scale_factor =  random.uniform(4, 6)
+      scaled = scale(cropped, scale_factor, Image.NEAREST);
+      transformed_image = scaled.crop((x,y,x+width,y+height))
 
-
+  # 
+  outline_width = 20 if transform == "scale" else 2
 
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
   draw = ImageDraw.Draw(overlay)    
@@ -206,8 +212,6 @@ for file in range(0,files):
       width, height = bounding_box_size(max_width, max_height, min_width, min_height)
       (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
       image.paste(out, (dx,dy), mask)
-
-      print(width,height)
 
   if test_mesh:
     draw_mesh(mesh, image)
