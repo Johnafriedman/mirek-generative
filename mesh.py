@@ -9,6 +9,8 @@ Original file is located at
 
 
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
+from PIL.ImageChops import invert
+
 from PIL.ImageTransform import MeshTransform
 import numpy as np
 import random
@@ -24,11 +26,13 @@ test_mesh = False
 
 
 use_mask = True
-layers = 3
+max_mesh_width = 6
+max_mesh_height = 6
+max_layers = 1
 files = 1
-shapes = 5
+shapes = 15
 radius = 5
-do_blur_prob = .4 
+do_transform_prob = .8
 prob_shape_destination_equals_source = .5
 
 max_fill_alpha = 255
@@ -56,34 +60,14 @@ if test_mesh:
 else:
   image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
 ##  image_path = 'abstract_artwork_with_neon1.png'
-##  image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
+# image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
 ##  image_path = 'myanmar_tm5_2004349_lrg.jpg'
 ##  image_path =  'PXL_20240906_152258909.jpg'
 
-def invert(image):
-# Create a mask with a white circle on a black background
-  mask = Image.new('L', image.size, 0)
-  draw = ImageDraw.Draw(mask)
+def blur(image, x, y, width, height, radius, fill, outline, outline_width):
 
-  # Define the circle's center and radius
-  center_x = image.width // 2
-  center_y = image.height // 2
-  radius = min(center_x, center_y) // 2  # Example: half of the smaller dimension
 
-  # Draw a white circle on the mask
-  draw.ellipse((center_x - radius, center_y - radius, center_x + radius, center_y + radius), fill=255)
-
-  # Invert the circular region of the image
-  inverted_image = ImageChops.invert(image)
-  image.paste(inverted_image, mask=mask)
-  
-# return the blurred image
-  return(image)
-  
-
-def blur(image, x, y, width, height, radius, fill, outline, outline_width, do_blur):
-
-  # Apply Gaussian Blur
+  # Create a image mask for the cropped image
 
   mask = Image.new('L', (width, height), 0)
 
@@ -93,34 +77,42 @@ def blur(image, x, y, width, height, radius, fill, outline, outline_width, do_bl
   # Define the bounding box for the ellipse
   bounding_box = (0, 0, width, height)  # Adjust as needed
 
+  do_transform = random.random() < do_transform_prob
 
-  shapes = ["ellipse", "rectangle"]
-  i = int(random.uniform(0,2))
-  shape = shapes[i]
+  shapes=["ellipse","rectangle"]
+  shape = shapes[int(random.uniform(0,len(shapes)))]
+
+  transforms = ["blur", "invert"]
+  transform = transforms[int(random.uniform(0,len(shapes)))]
+
   # Draw the ellipse on the mask (white color fills the ellipse)
   getattr(draw, shape)(bounding_box, fill=255)
-
-
 
   # Apply the mask to the image  
   cropped = image.crop((x,y,x+width,y+height))
 
-  if do_blur:
-    blurred_image = cropped.filter(ImageFilter.GaussianBlur(radius))
+  if not do_transform:
+    transformed_image = cropped
   else:
-    blurred_image = cropped
+    if transform == 'blur':
+      transformed_image = cropped.filter(ImageFilter.GaussianBlur(radius))
+    elif transform == 'invert':
+      red, green, blue, alpha = cropped.split()
+      transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
+
+
 
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
   draw = ImageDraw.Draw(overlay)    
   getattr(draw, shape)(bounding_box, fill, outline, outline_width)
 
-  blurred_image = Image.alpha_composite(blurred_image, overlay)
+  transformed_image = Image.alpha_composite(transformed_image, overlay)
   # image.paste(blurred_image,(dx,dy), mask)
 
 
 
 # return the blurred image
-  return(blurred_image, mask)
+  return(transformed_image, mask)
 
 
 # Open the image
@@ -141,10 +133,13 @@ for file in range(0,files):
   max_dy = image.height * .8
 
   im = make_transparent(image, 128)
+
+  layers = int(random.uniform(2, max_layers))
   for _ in range(0, layers):
     # Apply the mesh transform
-    #mesh = make_mesh(3,im)
-    mesh = create_randomized_aligned_mesh(3,4,im.width,im.height)
+    width = int(random.uniform(2, max_mesh_width))
+    height = int(random.uniform(2, max_mesh_height))
+    mesh = create_randomized_aligned_mesh(width,height,im.width,im.height)
     # Create a new image with the mesh
     out = im.transform(im.size, MeshTransform(mesh))
     mask = out if use_mask else None
@@ -181,8 +176,7 @@ for file in range(0,files):
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
       bounding_box=(0,0,width,height)
-      do_blur = random.random() > do_blur_prob
-      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2, do_blur)
+      (out, mask) = blur(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
       image.paste(out, (dx,dy), mask)
 
   if test_mesh:
