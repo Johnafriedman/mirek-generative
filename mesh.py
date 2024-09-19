@@ -29,10 +29,10 @@ test_mesh = False
 
 
 use_mask = True
-max_mesh_width = 6
-max_mesh_height = 6
+max_mesh_width = 3
+max_mesh_height = 2
 max_layers = 3
-files = 4
+files = 1
 shapes = 8
 radius = 5
 prob_do_transform = .9
@@ -63,7 +63,7 @@ if test_mesh:
 else:
   image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
 ##  image_path = 'abstract_artwork_with_neon1.png'
-# image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
+  # image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
 ##  image_path = 'myanmar_tm5_2004349_lrg.jpg'
 ##  image_path =  'PXL_20240906_152258909.jpg'
 
@@ -84,10 +84,10 @@ def bounding_box_size(max_width, max_height, min_width, min_height):
     Bounding box size as a tuple (width, height).
   """
   r=random.random()
-  w_ratio = r**6
+  w_ratio = r**3
 
   r=random.random()
-  h_ratio = r**6
+  h_ratio = r**3
 
   width = min_width + w_ratio * (max_width - min_width)
   height = min_height + h_ratio * (max_height - min_height)
@@ -95,8 +95,13 @@ def bounding_box_size(max_width, max_height, min_width, min_height):
 
 def transformed_shape(image, x, y, width, height, radius, fill, outline, outline_width):
 
+  shapes=["ellipse","rectangle"]
+  shape = shapes[int(random.uniform(0,len(shapes)))]
 
+  transforms = ["blur", "invert", "scale"]
+  transform = transforms[int(random.uniform(0,len(transforms)))]
   # Create a image mask for the cropped image
+
 
   mask = Image.new('L', (width, height), 0)
 
@@ -106,15 +111,10 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
   # Define the bounding box for the ellipse
   bounding_box = (0, 0, width, height)  # Adjust as needed
 
-  do_transform = random.random() < prob_do_transform
+  # do_transform = random.random() < prob_do_transform
+  do_transform=True
 
-  shapes=["ellipse","rectangle"]
-  shape = shapes[int(random.uniform(0,len(shapes)))]
-
-  transforms = ["blur", "invert", "scale"]
-  transform = transforms[int(random.uniform(0,len(transforms)))]
-
-  # Draw the ellipse on the mask (white color fills the ellipse)
+  # Draw the shape on the mask (white color fills the ellipse)
   getattr(draw, shape)(bounding_box, fill=255)
 
   # Apply the mask to the image  
@@ -129,21 +129,18 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
       red, green, blue, alpha = cropped.split()
       transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
     elif transform == "scale":
-      scale_factor =  random.uniform(4, 6)
-      scaled = scale(cropped, scale_factor, Image.NEAREST);
-      transformed_image = scaled.crop((x,y,x+width,y+height))
+      scale_factor =  int(random.uniform(2, 4))
+      scaled = scale(cropped, scale_factor, Image.NEAREST)
+      transformed_image = scaled.crop((0,0,width,height))
 
-  # 
-  outline_width = 20 if transform == "scale" else 2
+
 
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
   draw = ImageDraw.Draw(overlay)    
   getattr(draw, shape)(bounding_box, fill, outline, outline_width)
 
   transformed_image = Image.alpha_composite(transformed_image, overlay)
-  # image.paste(blurred_image,(dx,dy), mask)
-
-
+  transformed_image.save("./output/transformed_image.png")
 
 # return the blurred image
   return(transformed_image, mask)
@@ -156,10 +153,10 @@ for file in range(0,files):
   image = Image.open(input_path)
   image = image.convert('RGBA')
 
-  min_width = image.width * .1
-  min_height = image.height * .1
-  max_width = image.width * .4
-  max_height = image.height * .4
+  min_width = image.width * .05
+  min_height = image.height * .06
+  max_width = image.width * .5
+  max_height = image.height * .6
 
   min_dx = image.width * .1
   min_dy = image.height * .1
@@ -179,7 +176,7 @@ for file in range(0,files):
     mask = out if use_mask else None
     #draw the transformed image on the original using a mask
     image.paste(out, None, mask)
-
+    
     for shape in range(0,shapes):
 
       width = int(random.uniform(min_width, max_width))
@@ -210,11 +207,13 @@ for file in range(0,files):
       outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
       width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+
       (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
       image.paste(out, (dx,dy), mask)
 
-  if test_mesh:
+  '''if test_mesh:
     draw_mesh(mesh, image)
+    '''
     
   filename = f"output/mesh_image{file}.png"
   image.save(filename)
