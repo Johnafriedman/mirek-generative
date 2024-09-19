@@ -27,13 +27,15 @@ from generative.transforms import create_randomized_aligned_mesh
 IN_COLAB = 'google.colab' in sys.modules
 test_mesh = False
 
+GOLDEN_RATIO = 1.618
+
 
 use_mask = True
 max_mesh_width = 3
 max_mesh_height = 2
 max_layers = 3
-files = 1
-shapes = 8
+files = 4
+shapes = 6
 radius = 5
 prob_do_transform = .9
 prob_shape_destination_equals_source = .5
@@ -83,14 +85,20 @@ def bounding_box_size(max_width, max_height, min_width, min_height):
   Returns:
     Bounding box size as a tuple (width, height).
   """
-  r=random.random()
-  w_ratio = r**3
 
   r=random.random()
-  h_ratio = r**3
-
+  w_ratio = r**2
   width = min_width + w_ratio * (max_width - min_width)
-  height = min_height + h_ratio * (max_height - min_height)
+  height = width*GOLDEN_RATIO
+  r=random.random()
+  if r > .6:
+    w=width
+    width=height
+    height=w
+  elif r < .05:
+    height=width
+
+
   return int(width), int(height)
 
 def transformed_shape(image, x, y, width, height, radius, fill, outline, outline_width):
@@ -155,13 +163,13 @@ for file in range(0,files):
 
   min_width = image.width * .05
   min_height = image.height * .06
-  max_width = image.width * .5
+  max_width = image.width * .5/GOLDEN_RATIO
   max_height = image.height * .6
 
-  min_dx = image.width * .1
-  min_dy = image.height * .1
-  max_dx = image.width * .8
-  max_dy = image.height * .8
+  min_dx = - image.width * .1
+  min_dy = - image.height * .1
+  max_dx = image.width * .6
+  max_dy = image.height * .6
 
   im = make_transparent(image, 128)
 
