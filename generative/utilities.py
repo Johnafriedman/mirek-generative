@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
+import random
 
 
 
@@ -59,8 +60,11 @@ def make_transparent(image, luminance_threshold):
   # Convert the image to a NumPy array
   image_array = np.array(image)
 
-  # Create a mask based on luminance threshold (green channel)
-  mask = image_array[:,:,1] > luminance_threshold
+  # Calculate luminance
+  luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
+
+  # Create a mask based on luminance threshold
+  mask = luminance > luminance_threshold
 
   # Set transparent pixels (alpha channel to 0) where mask is True
   image_array[mask, 3] = 0
