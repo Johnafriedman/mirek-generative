@@ -12,6 +12,7 @@ from PIL.ImageTransform import MeshTransform
 import math
 import numpy as np
 import random
+import cv2
 
 import sys
 
@@ -28,22 +29,21 @@ GOLDEN_RATIO = 1.618
 use_mask = True
 max_layers = 3
 files = 5
-shapes = 40
 radius = 5
-prob_do_transform = .9
+prob_do_transform = 1
 prob_shape_destination_equals_source = 1
 
-max_fill_alpha = 255
-min_fill_alpha = 0
+max_fill_alpha = 8
+min_fill_alpha = 2
 max_fill_red = 255
-min_fill_red = 0
+min_fill_red = 192
 max_fill_green = 255
-min_fill_green = 0
-max_fill_blue = 255
-min_fill_blue = 0
+min_fill_green = 128
+max_fill_blue = 32
+min_fill_blue = 32
 
 max_outline_alpha = 255
-min_outline_alpha = 0
+min_outline_alpha = 128
 max_outline_red = 255
 min_outline_red = 0
 max_outline_green = 255
@@ -99,7 +99,7 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
   shapes=["ellipse","rectangle"]
   shape = shapes[int(random.uniform(0,len(shapes)))]
 
-  transforms = ["blur", "invert", "scale"]
+  transforms = ["blur", "scale"]
   transform = transforms[int(random.uniform(0,len(transforms)))]
   # Create a image mask for the cropped image
 
@@ -130,7 +130,7 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
       red, green, blue, alpha = cropped.split()
       transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
     elif transform == "scale":
-      scale_factor =  int(random.uniform(2, 4))
+      scale_factor =  int(random.uniform(2, 8))
       scaled = scale(cropped, scale_factor, Image.NEAREST)
       transformed_image = scaled.crop((0,0,width,height))
 
@@ -141,7 +141,6 @@ def transformed_shape(image, x, y, width, height, radius, fill, outline, outline
   getattr(draw, shape)(bounding_box, fill, outline, outline_width)
 
   transformed_image = Image.alpha_composite(transformed_image, overlay)
-  transformed_image.save("./output/transformed_image.png")
 
 # return the blurred image
   return(transformed_image, mask)
@@ -180,10 +179,12 @@ for file in range(0,files):
   image = Image.open(input_path)
   image = image.convert('RGBA')
 
+  edge_increment = int(image.width * .1)
+
   min_width = image.width * .01
   min_height = image.height * .02
-  max_width = image.width * .01/GOLDEN_RATIO
-  max_height = image.height * .02
+  max_width = image.width * .1/GOLDEN_RATIO
+  max_height = image.height * .2
 
   min_dx = - image.width * .1
   min_dy = - image.height * .1
@@ -201,45 +202,52 @@ for file in range(0,files):
     # Draw the transformed image on the original using a mask
     image.paste(out, None, mask)
     
-    # Convert the mask to a NumPy array
-    mask_array = np.array(mask)
+    if mask is not None:
+        # Convert the mask to a NumPy array
+        mask_array = np.array(mask)
 
-    # Iterate through the mask to find non-transparent pixels
-    non_transparent_pixels = np.argwhere(mask_array[:, :, 3] != 0)
+        # Convert the mask to grayscale
+        gray_mask = cv2.cvtColor(mask_array, cv2.COLOR_RGBA2GRAY)
 
-    for pixel in non_transparent_pixels:
-        sy, sx = pixel
+        # Apply Canny edge detection
+        edges = cv2.Canny(gray_mask, 100, 200)
 
-        width = int(random.uniform(min_width, max_width))
-        height = int(random.uniform(min_height, max_height))
+        # Iterate through the edges to find non-transparent pixels
+        non_transparent_pixels = np.argwhere(edges != 0)
 
-        if random.random() > prob_shape_destination_equals_source:
-            dx = int(random.uniform(min_dx, max_dx))
-            dy = int(random.uniform(min_dy, max_dy))
-        else:
-            dx = sx
-            dy = sy
+        for i in range(0, len(non_transparent_pixels), edge_increment):
+            sy, sx = non_transparent_pixels[i]
+            print(sx, sy)
+            width = int(random.uniform(min_width, max_width))
+            height = int(random.uniform(min_height, max_height))
 
-        fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
+            if random.random() > prob_shape_destination_equals_source:
+                dx = int(random.uniform(min_dx, max_dx))
+                dy = int(random.uniform(min_dy, max_dy))
+            else:
+                dx = sx
+                dy = sy
 
-        outline_alpha = int(random.uniform(min_outline_alpha, max_outline_alpha))     
+            fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
+
+            outline_alpha = int(random.uniform(min_outline_alpha, max_outline_alpha))     
     
-        fill_red = int(random.uniform(min_fill_red, max_fill_red))
+            fill_red = int(random.uniform(min_fill_red, max_fill_red))
 
-        outline_red = int(random.uniform(min_outline_red, max_outline_red))   
+            outline_red = int(random.uniform(min_outline_red, max_outline_red))   
 
-        fill_green = int(random.uniform(min_fill_green, max_fill_green))  
+            fill_green = int(random.uniform(min_fill_green, max_fill_green))  
 
-        outline_green = int(random.uniform(min_outline_green, max_outline_green))   
+            outline_green = int(random.uniform(min_outline_green, max_outline_green))   
     
-        fill_blue = int(random.uniform(min_fill_blue, max_fill_blue))
+            fill_blue = int(random.uniform(min_fill_blue, max_fill_blue))
 
-        outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
+            outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
 
-        width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+            width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-        (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
-        image.paste(out, (dx,dy), mask)
+            (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
+            image.paste(out, (dx,dy), mask)
 
     
   filename = f"output/meta_pixel_image{file}.png"
