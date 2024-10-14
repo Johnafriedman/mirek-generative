@@ -120,7 +120,7 @@ for file in range(0,files):
 
       width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-      (out, mask) = transformed_shape(image, sx, sy, width, height, 5, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
+      (out, mask) = transformed_shape(image, sx, sy, width, height, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
       image.paste(out, (dx,dy), mask)
 
   '''if test_mesh:
