@@ -136,27 +136,24 @@ def draw_mesh(mesh, image):
   return image
 
 def make_transparent(image, luminance_threshold):
-    image = image.convert('RGBA')
+  image = image.convert('RGBA')
 
-    # Convert the image to a NumPy array
-    image_array = np.array(image)
+  # Convert the image to a NumPy array
+  image_array = np.array(image)
 
-    # Calculate luminance
-    luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
+  # Calculate luminance
+  luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
 
-    # Normalize luminance to range [0, 255]
-    normalized_luminance = (luminance / 255.0) * 255
+  # Create a mask where luminance is above the threshold
+  mask = luminance > luminance_threshold
 
-    # Invert luminance to make darker colors more opaque
-    alpha_channel = 255 - normalized_luminance
+  # Set the alpha channel to 0 (transparent) where the mask is True
+  image_array[mask, 3] = 0
 
-    # Set the alpha channel based on the inverted luminance
-    image_array[:, :, 3] = alpha_channel
+  # Create a new image from the modified array
+  transparent_image = Image.fromarray(image_array.astype('uint8'))
 
-    # Create a new image from the modified array
-    transparent_image = Image.fromarray(image_array.astype('uint8'))
-
-    return transparent_image
+  return transparent_image
 
 def randomColor(name_space, name):
   minr = name_space[f"min_{name}_red"]
