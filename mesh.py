@@ -50,10 +50,7 @@ if test_mesh:
   image_path = 'grid_image.png'
 else:
   image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
-##  image_path = 'abstract_artwork_with_neon1.png'
-  # image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
-##  image_path = 'myanmar_tm5_2004349_lrg.jpg'
-##  image_path =  'PXL_20240906_152258909.jpg'
+
 
 
 
