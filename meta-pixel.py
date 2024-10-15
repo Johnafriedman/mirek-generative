@@ -87,7 +87,7 @@ for file in range(0,files):
 
   im = make_transparent(image, 64)
 
-  layers = int(random.uniform(2, max_layers))
+  layers = int(random.uniform(1, max_layers))
   for _ in range(0, layers):
 
     # Create a new image with the mesh
