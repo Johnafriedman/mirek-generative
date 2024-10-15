@@ -110,9 +110,11 @@ for file in range(0,files):
         non_transparent_pixels = np.argwhere(edges != 0)
 
         for i in range(0, len(non_transparent_pixels), edge_increment):
-            sy, sx = non_transparent_pixels[i]
-            width = int(random.uniform(min_width, max_width))
-            height = int(random.uniform(min_height, max_height))
+            
+            width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+
+            sy, sx = non_transparent_pixels[i] - (height // 2, width // 2)
+
 
             if random.random() > prob_shape_destination_equals_source:
                 dx = int(random.uniform(min_dx, max_dx))
@@ -121,7 +123,6 @@ for file in range(0,files):
                 dx = sx
                 dy = sy
 
-            width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
             (out, mask) = transformed_shape(
                 image=image,
@@ -135,6 +136,8 @@ for file in range(0,files):
                 radius = 5,
                 transforms=["blur", "scale"]
             )
+
+            
             image.paste(out, (dx,dy), mask)
 
     
