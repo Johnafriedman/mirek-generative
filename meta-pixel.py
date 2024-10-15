@@ -13,14 +13,8 @@ import cv2, sys
 
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 
-
-IN_COLAB = 'google.colab' in sys.modules
-test_mesh = False
-
-
-use_mask = True
 max_layers = 1
-files = 1
+files = 5
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
@@ -44,7 +38,7 @@ min_outline_green = 0
 max_outline_blue = 255
 min_outline_blue = 0
 
-source_folder = '/content/' if IN_COLAB else 'input/'
+source_folder = 'input/'
 image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
 
 def findOpaquePixels(image):
@@ -62,75 +56,69 @@ def findOpaquePixels(image):
     return opaque_pixels
 
 
-# Open the image
-input_path = f"input/{image_path}"
+def metaPixel(image_path):
+  # Open the image
+  input_path = f"input/{image_path}"
 
 
+  for file in range(0,files):
+    print("file", file)
+    image = Image.open(input_path)
+    image = image.convert('RGBA')
 
-for file in range(0,files):
-  print("file", file)
-  image = Image.open(input_path)
-  image = image.convert('RGBA')
+    min_width = image.width * .01
+    min_height = image.height * .02
+    max_width = image.width * .1/GOLDEN_RATIO
+    max_height = image.height * .2
 
-  min_width = image.width * .01
-  min_height = image.height * .02
-  max_width = image.width * .1/GOLDEN_RATIO
-  max_height = image.height * .2
+    min_dx = - image.width * .1
+    min_dy = - image.height * .1
+    max_dx = image.width * .6
+    max_dy = image.height * .6
 
-  min_dx = - image.width * .1
-  min_dy = - image.height * .1
-  max_dx = image.width * .6
-  max_dy = image.height * .6
+    im = make_transparent(image, 32)
+    opaque_pixels = findOpaquePixels(im)
 
-  im = make_transparent(image, 32)
-  opaque_pixels = findOpaquePixels(im)
+    for _ in range(0, max_layers):
+      print("layer", _)
+      # Create a new image with the mesh
+      
+      edge_pixel_cnt = int(len(opaque_pixels))
+      edge_increment = int((edge_pixel_cnt) / shapes)
+      start = int(edge_pixel_cnt % edge_increment)
+      for i in range(start, edge_pixel_cnt, edge_increment):
+        width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-  for _ in range(0, max_layers):
-    print("layer", _)
-    # Create a new image with the mesh
-    out = im.copy()
-    mask = out if use_mask else None
-    # Draw the transformed image on the original using a mask
-    # image.paste(out, None, mask)
-    
-    if mask is not None:
-        # Convert the mask to a NumPy array
+        sy, sx = opaque_pixels[i] - (height // 2, width // 2)
 
-        edge_increment = int(len(opaque_pixels) / shapes)
-        for i in range(0, len(opaque_pixels), edge_increment):
-            width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+        if sy < 0 or sx < 0:
+          continue
 
-            sy, sx = opaque_pixels[i] - (height // 2, width // 2)
+        if random.random() > prob_shape_destination_equals_source:
+            dx = int(random.uniform(min_dx, max_dx))
+            dy = int(random.uniform(min_dy, max_dy))
+        else:
+            dx = sx
+            dy = sy
 
-            if sy < 0 or sx < 0:
-              continue
+        (out, mask) = transformed_shape(
+            image=image,
+            x=sx,
+            y=sy,
+            width=width,
+            height=height,
+            fill=randomColor(globals(),"fill"),
+            outline=randomColor(globals(),"outline"),
+            outline_width=2,
+            radius = 5,
+            transforms=["blur", "scale"]
+        )
 
-            if random.random() > prob_shape_destination_equals_source:
-                dx = int(random.uniform(min_dx, max_dx))
-                dy = int(random.uniform(min_dy, max_dy))
-            else:
-                dx = sx
-                dy = sy
-
-
-            (out, mask) = transformed_shape(
-                image=image,
-                x=sx,
-                y=sy,
-                width=width,
-                height=height,
-                fill=randomColor(globals(),"fill"),
-                outline=randomColor(globals(),"outline"),
-                outline_width=2,
-                radius = 5,
-                transforms=["blur", "scale"]
-            )
-
-            
-            image.paste(out, (dx,dy), mask)
-
-    
-  filename = f"output/meta_pixel_image{file}.png"
-  image.save(filename)
-  image.show(filename)
+        image.paste(out, (dx,dy), mask)
+          
+    filename = f"output/meta_pixel_image{file}.png"
+    image.save(filename)
+    image.show(filename)
+      
+metaPixel(image_path)
 
