@@ -16,7 +16,7 @@ import cv2
 
 import sys
 
-from generative.utilities import make_transparent, transformed_shape, bounding_box_size, GOLDEN_RATIO
+from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 from generative.transforms import create_randomized_aligned_mesh
 
 
@@ -25,8 +25,8 @@ test_mesh = False
 
 
 use_mask = True
-max_layers = 3
-files = 5
+max_layers = 1
+files = 1
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
@@ -68,29 +68,6 @@ input_path = f"input/{image_path}"
 
 import numpy as np
 from PIL import Image
-
-def make_transparent(image, luminance_threshold):
-    image = image.convert('RGBA')
-
-    # Convert the image to a NumPy array
-    image_array = np.array(image)
-
-    # Calculate luminance
-    luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
-
-    # Normalize luminance to range [0, 255]
-    normalized_luminance = (luminance / 255.0) * 255
-
-    # Invert luminance to make darker colors more opaque
-    alpha_channel = 255 - normalized_luminance
-
-    # Set the alpha channel based on the inverted luminance
-    image_array[:, :, 3] = alpha_channel
-
-    # Create a new image from the modified array
-    transparent_image = Image.fromarray(image_array.astype('uint8'))
-
-    return transparent_image
 
 for file in range(0,files):
   image = Image.open(input_path)
@@ -144,22 +121,6 @@ for file in range(0,files):
                 dx = sx
                 dy = sy
 
-            fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
-
-            outline_alpha = int(random.uniform(min_outline_alpha, max_outline_alpha))     
-    
-            fill_red = int(random.uniform(min_fill_red, max_fill_red))
-
-            outline_red = int(random.uniform(min_outline_red, max_outline_red))   
-
-            fill_green = int(random.uniform(min_fill_green, max_fill_green))  
-
-            outline_green = int(random.uniform(min_outline_green, max_outline_green))   
-    
-            fill_blue = int(random.uniform(min_fill_blue, max_fill_blue))
-
-            outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
-
             width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
             (out, mask) = transformed_shape(
@@ -168,8 +129,8 @@ for file in range(0,files):
                 y=sy,
                 width=width,
                 height=height,
-                fill=(fill_red, fill_green, fill_blue, fill_alpha),
-                outline=(outline_red, outline_green, outline_blue, outline_alpha),
+                fill=randomColor(globals(),"fill"),
+                outline=randomColor(globals(),"outline"),
                 outline_width=2,
                 radius = 5,
                 transforms=["blur", "scale"]

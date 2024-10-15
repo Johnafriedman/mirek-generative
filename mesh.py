@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageTransform import MeshTransform
 
 from generative.transforms import create_randomized_aligned_mesh
-from generative.utilities import transformed_shape, bounding_box_size, make_transparent, GOLDEN_RATIO
+from generative.utilities import transformed_shape, bounding_box_size, make_transparent, randomColor, GOLDEN_RATIO
 
 
 IN_COLAB = 'google.colab' in sys.modules
@@ -20,8 +20,8 @@ use_mask = True
 max_mesh_width = 3
 max_mesh_height = 2
 max_layers = 3
-files = 2
-shapes = 6
+files = 1
+shapes = 10
 radius = 5
 prob_do_transform = .9
 prob_shape_destination_equals_source = .5
@@ -99,25 +99,18 @@ for file in range(0,files):
         dx = sx
         dy = sy
 
-      fill_alpha = int(random.uniform(min_fill_alpha, max_fill_alpha))  
-
-      outline_alpha = int(random.uniform(min_outline_alpha, max_outline_alpha))     
-    
-      fill_red = int(random.uniform(min_fill_red, max_fill_red))
-
-      outline_red = int(random.uniform(min_outline_red, max_outline_red))   
-
-      fill_green = int(random.uniform(min_fill_green, max_fill_green))  
-
-      outline_green = int(random.uniform(min_outline_green, max_outline_green))   
-    
-      fill_blue = int(random.uniform(min_fill_blue, max_fill_blue))
-
-      outline_blue = int(random.uniform(min_outline_blue, max_outline_blue)) 
-
       width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-      (out, mask) = transformed_shape(image, sx, sy, width, height, (fill_red, fill_green, fill_blue, fill_alpha), (outline_red, outline_green, outline_blue, outline_alpha), 2)
+      (out, mask) = transformed_shape(
+                image=image,
+                x=sx,
+                y=sy,
+                width=width,
+                height=height,
+                fill=randomColor(globals(),"fill"),
+                outline=randomColor(globals(),"outline"),
+                outline_width=2
+            )
       image.paste(out, (dx,dy), mask)
 
   '''if test_mesh:

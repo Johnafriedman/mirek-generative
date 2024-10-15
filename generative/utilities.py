@@ -136,19 +136,41 @@ def draw_mesh(mesh, image):
   return image
 
 def make_transparent(image, luminance_threshold):
+    image = image.convert('RGBA')
 
-  image = image.convert('RGBA')
+    # Convert the image to a NumPy array
+    image_array = np.array(image)
 
-  # Convert the image to a NumPy array
-  image_array = np.array(image)
+    # Calculate luminance
+    luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
 
-  # Create a mask based on luminance threshold (green channel)
-  mask = image_array[:,:,1] > luminance_threshold
+    # Normalize luminance to range [0, 255]
+    normalized_luminance = (luminance / 255.0) * 255
 
-  # Set transparent pixels (alpha channel to 0) where mask is True
-  image_array[mask, 3] = 0
+    # Invert luminance to make darker colors more opaque
+    alpha_channel = 255 - normalized_luminance
 
-  # Create a new image from the modified array
-  transparent_image = Image.fromarray(image_array)
+    # Set the alpha channel based on the inverted luminance
+    image_array[:, :, 3] = alpha_channel
 
-  return transparent_image
+    # Create a new image from the modified array
+    transparent_image = Image.fromarray(image_array.astype('uint8'))
+
+    return transparent_image
+
+def randomColor(name_space, name):
+  minr = name_space[f"min_{name}_red"]
+  maxr = name_space[f"max_{name}_red"]
+  ming = name_space[f"min_{name}_green"]
+  maxg = name_space[f"max_{name}_green"]
+  minb = name_space[f"min_{name}_blue"]
+  maxb = name_space[f"max_{name}_blue"]
+  mina = name_space[f"min_{name}_alpha"]
+  maxa = name_space[f"max_{name}_alpha"]
+
+  return (
+    int(random.uniform(minr, maxr)),
+    int(random.uniform(ming, maxg)), 
+    int(random.uniform(minb, maxb)), 
+    int(random.uniform(mina, maxa))
+  )
