@@ -3,21 +3,15 @@
 """
 
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
-
-from PIL.ImageTransform import MeshTransform
-
-import math
 import numpy as np
+from PIL import Image
 import random
-import cv2
-
-import sys
+import cv2, sys
 
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
-from generative.transforms import create_randomized_aligned_mesh
 
 
 IN_COLAB = 'google.colab' in sys.modules
@@ -51,24 +45,27 @@ max_outline_blue = 255
 min_outline_blue = 0
 
 source_folder = '/content/' if IN_COLAB else 'input/'
+image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
 
-if test_mesh:
-  image_path = 'grid_image.png'
-else:
-  image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
-##  image_path = 'abstract_artwork_with_neon1.png'
-  # image_path = 'rhythms_entropic_heavens_waves_continue_v10.png'
-##  image_path = 'myanmar_tm5_2004349_lrg.jpg'
-#image_path =  'fence.jpg'
+def findOpaquePixels(image):
 
-import math
+    mask_array = np.array(image)
+
+    # Convert the mask to grayscale
+    gray_mask = cv2.cvtColor(mask_array, cv2.COLOR_RGBA2GRAY)
+
+    # Apply Canny edge detection
+    edges = cv2.Canny(gray_mask, 100, 200)
+
+    # Iterate through the edges to find non-transparent pixels
+    opaque_pixels = np.argwhere(edges != 0)
+    return opaque_pixels
 
 
 # Open the image
 input_path = f"input/{image_path}"
 
-import numpy as np
-from PIL import Image
+
 
 for file in range(0,files):
   print("file", file)
@@ -85,7 +82,8 @@ for file in range(0,files):
   max_dx = image.width * .6
   max_dy = image.height * .6
 
-  im = make_transparent(image, 64)
+  im = make_transparent(image, 32)
+  opaque_pixels = findOpaquePixels(im)
 
   for _ in range(0, max_layers):
     print("layer", _)
@@ -93,26 +91,16 @@ for file in range(0,files):
     out = im.copy()
     mask = out if use_mask else None
     # Draw the transformed image on the original using a mask
-    image.paste(out, None, mask)
+    # image.paste(out, None, mask)
     
     if mask is not None:
         # Convert the mask to a NumPy array
-        mask_array = np.array(mask)
 
-        # Convert the mask to grayscale
-        gray_mask = cv2.cvtColor(mask_array, cv2.COLOR_RGBA2GRAY)
-
-        # Apply Canny edge detection
-        edges = cv2.Canny(gray_mask, 100, 200)
-
-        # Iterate through the edges to find non-transparent pixels
-        non_transparent_pixels = np.argwhere(edges != 0)
-
-        edge_increment = int(len(non_transparent_pixels) / shapes)
-        for i in range(0, len(non_transparent_pixels), edge_increment):
+        edge_increment = int(len(opaque_pixels) / shapes)
+        for i in range(0, len(opaque_pixels), edge_increment):
             width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-            sy, sx = non_transparent_pixels[i] - (height // 2, width // 2)
+            sy, sx = opaque_pixels[i] - (height // 2, width // 2)
 
             if sy < 0 or sx < 0:
               continue
