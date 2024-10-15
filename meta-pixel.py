@@ -30,7 +30,7 @@ files = 1
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
-shapes = 2**6
+shapes = 2**8
 
 max_fill_alpha = 128
 min_fill_alpha = 32
@@ -38,7 +38,7 @@ max_fill_red = 255
 min_fill_red = 192
 max_fill_green = 255
 min_fill_green = 128
-max_fill_blue = 32
+max_fill_blue = 64
 min_fill_blue = 32
 
 max_outline_alpha = 255
