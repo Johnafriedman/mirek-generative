@@ -30,9 +30,10 @@ files = 1
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
+shapes = 2**6
 
-max_fill_alpha = 8
-min_fill_alpha = 2
+max_fill_alpha = 128
+min_fill_alpha = 32
 max_fill_red = 255
 min_fill_red = 192
 max_fill_green = 255
@@ -70,10 +71,9 @@ import numpy as np
 from PIL import Image
 
 for file in range(0,files):
+  print("file", file)
   image = Image.open(input_path)
   image = image.convert('RGBA')
-
-  edge_increment = int(image.width * .1)
 
   min_width = image.width * .01
   min_height = image.height * .02
@@ -87,9 +87,8 @@ for file in range(0,files):
 
   im = make_transparent(image, 64)
 
-  layers = int(random.uniform(1, max_layers))
-  for _ in range(0, layers):
-
+  for _ in range(0, max_layers):
+    print("layer", _)
     # Create a new image with the mesh
     out = im.copy()
     mask = out if use_mask else None
@@ -109,12 +108,14 @@ for file in range(0,files):
         # Iterate through the edges to find non-transparent pixels
         non_transparent_pixels = np.argwhere(edges != 0)
 
+        edge_increment = int(len(non_transparent_pixels) / shapes)
         for i in range(0, len(non_transparent_pixels), edge_increment):
-            
             width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
             sy, sx = non_transparent_pixels[i] - (height // 2, width // 2)
 
+            if sy < 0 or sx < 0:
+              continue
 
             if random.random() > prob_shape_destination_equals_source:
                 dx = int(random.uniform(min_dx, max_dx))
