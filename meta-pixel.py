@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """meta-pixel.py
 """
-
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from PIL import Image
 from PIL.ImageChops import invert
@@ -14,11 +15,12 @@ import cv2, sys
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 
 max_layers = 1
-files = 5
+files = 1
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
 shapes = 2**8
+
 
 max_fill_alpha = 128
 min_fill_alpha = 32
@@ -28,6 +30,15 @@ max_fill_green = 255
 min_fill_green = 128
 max_fill_blue = 64
 min_fill_blue = 32
+
+max_accent_alpha = 212
+min_accent_alpha = 192
+max_accent_red = 255
+min_accent_red = 192
+max_accent_green = 16
+min_accent_green = 0
+max_accent_blue = 16
+min_accent_blue = 0
 
 max_outline_alpha = 255
 min_outline_alpha = 128
@@ -39,7 +50,7 @@ max_outline_blue = 255
 min_outline_blue = 0
 
 source_folder = 'input/'
-image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
+image_path = 'input/Rhythms_Circle_DataReferenceSet_1982_2.png'
 
 def findOpaquePixels(image):
 
@@ -56,13 +67,13 @@ def findOpaquePixels(image):
     return opaque_pixels
 
 
-def metaPixel(image_path):
-  # Open the image
-  input_path = f"input/{image_path}"
+def metaPixel(input_path, pdf_canvas, output_image_path):
 
 
   for file in range(0,files):
     print("file", file)
+
+  # Open the image
     image = Image.open(input_path)
     image = image.convert('RGBA')
 
@@ -101,13 +112,16 @@ def metaPixel(image_path):
             dx = sx
             dy = sy
 
+        fill=randomColor(globals(),"fill") if random.random() > .05 else randomColor(globals(),"accent")
+        
+
         (out, mask) = transformed_shape(
             image=image,
             x=sx,
             y=sy,
             width=width,
             height=height,
-            fill=randomColor(globals(),"fill"),
+            fill=fill,
             outline=randomColor(globals(),"outline"),
             outline_width=2,
             radius = 5,
@@ -119,6 +133,22 @@ def metaPixel(image_path):
     filename = f"output/meta_pixel_image{file}.png"
     image.save(filename)
     image.show(filename)
+     # Add the image to the PDF
+    pdf_canvas.drawImage(filename, 0, 0, width, height)
+
       
-metaPixel(image_path)
+# Open a PDF for writing
+pdf_path = "output/meta_pixel_output.pdf"
+pdf_canvas = canvas.Canvas(pdf_path, pagesize=letter)
+
+# Call the metaPixel function
+output_image_path = "output/meta_pixel_image.png"
+metaPixel(image_path, pdf_canvas, output_image_path)
+
+# Save and open the PDF
+pdf_canvas.save()
+
+# Open the PDF (Mac-specific command)
+import os
+os.system(f"open {pdf_path}")
 
