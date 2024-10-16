@@ -17,8 +17,8 @@ import cv2
 
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 
-max_layers = 1
-shapes = 2**8
+max_layers = 2
+shapes = 2**7
 
 files = 5
 radius = 5
@@ -95,13 +95,13 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
     im = make_transparent(image, 32)
     opaque_pixels = findOpaquePixels(im)
 
+    edge_pixel_cnt = int(len(opaque_pixels))
+    edge_increment = int((edge_pixel_cnt) / shapes)
+    start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, max_layers):
       print("layer", _)
       # Create a new image with the mesh
       
-      edge_pixel_cnt = int(len(opaque_pixels))
-      edge_increment = int((edge_pixel_cnt) / shapes)
-      start = int(edge_pixel_cnt % edge_increment)
       for i in range(start, edge_pixel_cnt, edge_increment):
         width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
