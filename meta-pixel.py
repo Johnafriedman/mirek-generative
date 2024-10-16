@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """meta-pixel.py
 """
-from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib import utils
+from reportlab.lib.units import inch
+
 
 from PIL import Image
 from PIL.ImageChops import invert
@@ -10,12 +12,15 @@ from PIL.ImageOps import scale
 import numpy as np
 from PIL import Image
 import random
-import cv2, sys
+import cv2
+
 
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 
 max_layers = 1
-files = 1
+shapes = 2**8
+
+files = 5
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
@@ -112,7 +117,7 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
             dx = sx
             dy = sy
 
-        fill=randomColor(globals(),"fill") if random.random() > .05 else randomColor(globals(),"accent")
+        fill=randomColor(globals(),"fill") if random.random() > .02 else randomColor(globals(),"accent")
         
 
         (out, mask) = transformed_shape(
@@ -132,14 +137,23 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
           
     filename = f"output/meta_pixel_image{file}.png"
     image.save(filename)
-    image.show(filename)
-     # Add the image to the PDF
-    pdf_canvas.drawImage(filename, 0, 0, width, height)
+    # image.show(filename)
+
+
+    # Add a new page to the PDF with the same size as the image
+    pdf_canvas.setPageSize((image.width, image.height))
+
+    # Add the image to the PDF
+    pdf_canvas.drawImage(filename, 0, 0, preserveAspectRatio=True, width=image.width, height=image.height)
+
+    pdf_canvas.showPage()
+
+
 
       
 # Open a PDF for writing
 pdf_path = "output/meta_pixel_output.pdf"
-pdf_canvas = canvas.Canvas(pdf_path, pagesize=letter)
+pdf_canvas = canvas.Canvas(pdf_path)
 
 # Call the metaPixel function
 output_image_path = "output/meta_pixel_image.png"
