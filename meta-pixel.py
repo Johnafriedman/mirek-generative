@@ -4,9 +4,10 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib import utils
 from reportlab.lib.units import inch
+from sklearn.cluster import DBSCAN
 
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
 import numpy as np
@@ -20,7 +21,7 @@ from generative.utilities import make_transparent, transformed_shape, bounding_b
 max_layers = 2
 shapes = 2**7
 
-files = 5
+files = 1
 radius = 5
 prob_do_transform = 1
 prob_shape_destination_equals_source = 1
@@ -56,6 +57,72 @@ min_outline_blue = 0
 
 source_folder = 'input/'
 image_path = 'input/Rhythms_Circle_DataReferenceSet_1982_2.png'
+
+def visualizeClusters(image, clusters):
+    """
+    Visualize clusters of points on the image.
+
+    Parameters:
+    - image: The input image.
+    - clusters: A list of clusters, where each cluster is a list of points.
+    """
+    output_image = image.copy()
+    draw = ImageDraw.Draw(output_image)
+
+    if not clusters:
+      return output_image
+    
+    # Calculate the maximum cluster size for normalization
+    max_cluster_size = max(len(cluster) for cluster in clusters)
+
+    for cluster in clusters:
+        # Calculate luminance based on the size of the cluster
+        cluster_size = len(cluster)
+        luminance = int(255 * (1 - (cluster_size / max_cluster_size)))  # Darker for larger clusters
+        color = (luminance, 0, luminance)
+
+        # Calculate the centroid of the cluster
+        centroid = np.mean(cluster, axis=0).astype(int)
+
+        # Calculate the radius of the circle to encompass the cluster
+        distances = np.linalg.norm(cluster - centroid, axis=1)
+        radius = int(np.max(distances))
+
+        # Draw the circle around the cluster
+        draw.ellipse((centroid[1] - radius, centroid[0] - radius, centroid[1] + radius, centroid[0] + radius), outline=color, width=2)
+
+    return output_image
+
+def findClusters(points, eps=5, min_samples=10):
+    """
+    Find clusters of points in an image.
+
+    Parameters:
+    - image: The input image.
+    - points: A numpy array of points (x, y).
+    - eps: The maximum distance between two samples for one to be considered as in the neighborhood of the other.
+    - min_samples: The number of samples in a neighborhood for a point to be considered as a core point.
+
+    Returns:
+    - A list of clusters, where each cluster is a list of points.
+    """
+    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
+    labels = clustering.labels_
+
+    clusters = []
+    for label in set(labels):
+        if label != -1:  # -1 is the label for noise points
+            cluster_points = points[labels == label]
+            print(len(cluster_points))
+            clusters.append(cluster_points.tolist())
+
+    return clusters
+
+# Example usage
+# image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+# opaque_pixels = findOpaquePixels(image)
+# clusters = findClusters(image, opaque_pixels)
+# print(clusters)
 
 def findOpaquePixels(image):
 
@@ -94,6 +161,8 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
 
     im = make_transparent(image, 32)
     opaque_pixels = findOpaquePixels(im)
+
+    opaque_pixels = findOpaquePixels(image)
 
     edge_pixel_cnt = int(len(opaque_pixels))
     edge_increment = int((edge_pixel_cnt) / shapes)
@@ -134,6 +203,10 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
         )
 
         image.paste(out, (dx,dy), mask)
+
+    clusters = findClusters(opaque_pixels, min_samples=64, eps=20)
+    print(len(clusters))
+    image = visualizeClusters(image, clusters)
           
     filename = f"output/meta_pixel_image{file}.png"
     image.save(filename)
