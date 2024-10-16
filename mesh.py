@@ -2,7 +2,7 @@
 """mesh.py
 """
 
-import random, sys
+import random, sys, datetime
 
 from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageTransform import MeshTransform
@@ -17,9 +17,9 @@ test_mesh = False
 
 
 use_mask = True
-max_mesh_width = 3
-max_mesh_height = 2
-max_layers = 3
+max_mesh_width = 4
+max_mesh_height = 6
+max_layers = 5
 files = 1
 shapes = 10
 radius = 5
@@ -49,9 +49,10 @@ source_folder = '/content/' if IN_COLAB else 'input/'
 if test_mesh:
   image_path = 'grid_image.png'
 else:
-  image_path = 'Rhythms_Circle_DataReferenceSet_1982_2.png'
-
-
+  image_name = 'tree_dark'
+  image_ext = 'jpg'
+  image_path = f'{image_name}.{image_ext}'
+  image_date = datetime.datetime.now().strftime("%Y%m%d%H%M")
 
 
 
@@ -72,7 +73,7 @@ for file in range(0,files):
   max_dx = image.width * .6
   max_dy = image.height * .6
 
-  im = make_transparent(image, 128)
+  im = make_transparent(image, 32, above=False)
 
   layers = int(random.uniform(2, max_layers))
   for _ in range(0, layers):
@@ -117,7 +118,7 @@ for file in range(0,files):
     draw_mesh(mesh, image)
     '''
     
-  filename = f"output/mesh_image{file}.png"
+  filename = f"output/mesh_{image_name}_{image_date}{file}.png"
   image.save(filename)
   image.show(filename)
 

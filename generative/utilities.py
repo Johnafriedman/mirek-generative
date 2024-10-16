@@ -135,7 +135,7 @@ def draw_mesh(mesh, image):
 
   return image
 
-def make_transparent(image, luminance_threshold):
+def make_transparent(image, luminance_threshold, above=True):
   image = image.convert('RGBA')
 
   # Convert the image to a NumPy array
@@ -145,7 +145,10 @@ def make_transparent(image, luminance_threshold):
   luminance = 0.299 * image_array[:, :, 0] + 0.587 * image_array[:, :, 1] + 0.114 * image_array[:, :, 2]
 
   # Create a mask where luminance is above the threshold
-  mask = luminance > luminance_threshold
+  if above:
+    mask = luminance > luminance_threshold
+  else:
+    mask = luminance < luminance_threshold
 
   # Set the alpha channel to 0 (transparent) where the mask is True
   image_array[mask, 3] = 0
