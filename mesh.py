@@ -20,11 +20,13 @@ use_mask = True
 max_mesh_width = 4
 max_mesh_height = 6
 max_layers = 5
-files = 1
+files = 5
 shapes = 10
 radius = 5
 prob_do_transform = .9
 prob_shape_destination_equals_source = .5
+transparent_threshold = 128
+transparent_above = True
 
 max_fill_alpha = 255
 min_fill_alpha = 0
@@ -49,7 +51,7 @@ source_folder = '/content/' if IN_COLAB else 'input/'
 if test_mesh:
   image_path = 'grid_image.png'
 else:
-  image_name = 'tree_dark'
+  image_name = 'hieroglyphics'
   image_ext = 'jpg'
   image_path = f'{image_name}.{image_ext}'
   image_date = datetime.datetime.now().strftime("%Y%m%d%H%M")
@@ -70,10 +72,10 @@ for file in range(0,files):
 
   min_dx = - image.width * .1
   min_dy = - image.height * .1
-  max_dx = image.width * .6
-  max_dy = image.height * .6
+  max_dx = image.width * .9
+  max_dy = image.height * .9
 
-  im = make_transparent(image, 32, above=False)
+  im = make_transparent(image, transparent_threshold, above=transparent_above)
 
   layers = int(random.uniform(2, max_layers))
   for _ in range(0, layers):
@@ -118,7 +120,7 @@ for file in range(0,files):
     draw_mesh(mesh, image)
     '''
     
-  filename = f"output/mesh_{image_name}_{image_date}{file}.png"
+  filename = f"output/mesh_{image_name}_{image_date}_{file}.png"
   image.save(filename)
   image.show(filename)
 
