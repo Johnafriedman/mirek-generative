@@ -7,9 +7,9 @@ from PIL.ImageOps import scale
 
 GOLDEN_RATIO = 1.618
 
-def transformed_shape(image, x, y, width, height, fill, outline, outline_width, radius = 5, transforms = ["blur", "invert", "scale"]):
+def transformed_shape(image, x, y, width, height, fill, outline, outline_width, radius = 5, transforms = ["blur", "invert", "scale"], shapes=["ellipse","rectangle"],do_transform=True):
 
-  shapes=["ellipse","rectangle"]
+  
   shape = shapes[int(random.uniform(0,len(shapes)))]
 
   transform = transforms[int(random.uniform(0,len(transforms)))]
@@ -25,7 +25,6 @@ def transformed_shape(image, x, y, width, height, fill, outline, outline_width, 
   bounding_box = (0, 0, width, height)  # Adjust as needed
 
   # do_transform = random.random() < prob_do_transform
-  do_transform=True
 
   # Draw the shape on the mask (white color fills the ellipse)
   getattr(draw, shape)(bounding_box, fill=255)
