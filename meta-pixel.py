@@ -12,11 +12,15 @@ from PIL.ImageChops import invert
 from PIL.ImageOps import scale
 import numpy as np
 from PIL import Image
-import random
+import random, os
 import cv2
 
-
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
+
+
+create_pdf = True
+show_pdf = True
+show_image = True
 
 max_layers = 2
 shapes = 2**7
@@ -27,6 +31,20 @@ prob_do_transform = 1
 prob_shape_destination_equals_source = 1
 shapes = 2**8
 
+eps=20
+min_samples=64
+
+accent_color_percentage = .02
+
+min_width_percentage = .01
+min_height_percentage = .02
+max_width_percentage = .1/GOLDEN_RATIO
+max_height_percentage = .2
+
+min_dx_percentage = - .1
+min_dy_percentage = - .1
+max_dx_percentage = .6
+max_dy_percentage = .6
 
 max_fill_alpha = 128
 min_fill_alpha = 32
@@ -93,7 +111,7 @@ def visualizeClusters(image, clusters):
 
     return output_image
 
-def findClusters(points, eps=5, min_samples=10):
+def findClusters(points, eps=eps, min_samples=min_samples):
     """
     Find clusters of points in an image.
 
@@ -113,7 +131,6 @@ def findClusters(points, eps=5, min_samples=10):
     for label in set(labels):
         if label != -1:  # -1 is the label for noise points
             cluster_points = points[labels == label]
-            print(len(cluster_points))
             clusters.append(cluster_points.tolist())
 
     return clusters
@@ -149,19 +166,17 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
     image = Image.open(input_path)
     image = image.convert('RGBA')
 
-    min_width = image.width * .01
-    min_height = image.height * .02
-    max_width = image.width * .1/GOLDEN_RATIO
-    max_height = image.height * .2
+    min_width = image.width * min_width_percentage
+    min_height = image.height *  min_height_percentage
+    max_width = image.width * max_width_percentage/GOLDEN_RATIO
+    max_height = image.height * max_height_percentage
 
-    min_dx = - image.width * .1
-    min_dy = - image.height * .1
-    max_dx = image.width * .6
-    max_dy = image.height * .6
+    min_dx = - image.width * min_dx_percentage
+    min_dy = - image.height * min_dy_percentage
+    max_dx = image.width * max_dx_percentage
+    max_dy = image.height * max_dy_percentage
 
     im = make_transparent(image, 32)
-    opaque_pixels = findOpaquePixels(im)
-
     opaque_pixels = findOpaquePixels(image)
 
     edge_pixel_cnt = int(len(opaque_pixels))
@@ -186,7 +201,7 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
             dx = sx
             dy = sy
 
-        fill=randomColor(globals(),"fill") if random.random() > .02 else randomColor(globals(),"accent")
+        fill=randomColor(globals(),"fill") if random.random() > accent_color_percentage else randomColor(globals(),"accent")
         
 
         (out, mask) = transformed_shape(
@@ -204,38 +219,39 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
 
         image.paste(out, (dx,dy), mask)
 
-    clusters = findClusters(opaque_pixels, min_samples=64, eps=20)
-    print(len(clusters))
+    clusters = findClusters(opaque_pixels, min_samples=min_samples, eps=eps)
     image = visualizeClusters(image, clusters)
           
     filename = f"output/meta_pixel_image{file}.png"
     image.save(filename)
-    # image.show(filename)
+    if(show_image):
+      image.show(filename)
+
+    if create_pdf:
+      # Add a new page to the PDF with the same size as the image
+      pdf_canvas.setPageSize((image.width, image.height))
+
+      # Add the image to the PDF
+      pdf_canvas.drawImage(filename, 0, 0, preserveAspectRatio=True, width=image.width, height=image.height)
+
+      pdf_canvas.showPage()
 
 
-    # Add a new page to the PDF with the same size as the image
-    pdf_canvas.setPageSize((image.width, image.height))
 
-    # Add the image to the PDF
-    pdf_canvas.drawImage(filename, 0, 0, preserveAspectRatio=True, width=image.width, height=image.height)
-
-    pdf_canvas.showPage()
-
-
-
-      
+if create_pdf:      
 # Open a PDF for writing
-pdf_path = "output/meta_pixel_output.pdf"
-pdf_canvas = canvas.Canvas(pdf_path)
+  pdf_path = "output/meta_pixel_output.pdf"
+  pdf_canvas = canvas.Canvas(pdf_path)
 
 # Call the metaPixel function
 output_image_path = "output/meta_pixel_image.png"
 metaPixel(image_path, pdf_canvas, output_image_path)
 
-# Save and open the PDF
-pdf_canvas.save()
+if create_pdf:
+  # Save and open the PDF
+  pdf_canvas.save()
 
-# Open the PDF (Mac-specific command)
-import os
-os.system(f"open {pdf_path}")
+  # Open the PDF (Mac-specific command)
+  if show_pdf:
+    os.system(f"open {pdf_path}")
 
