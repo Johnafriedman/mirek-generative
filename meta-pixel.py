@@ -18,60 +18,60 @@ import cv2
 from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
 
 
-create_pdf = True
-show_pdf = True
-show_image = True
+CREATE_PDF = True
+SHOW_PDF = True
+SHOW_IMAGE = True
 
-max_layers = 2
-shapes = 2**7
+MAX_LAYERS = 2
+SHAPES = 2**7
 
-files = 1
-radius = 5
-prob_do_transform = 1
-prob_shape_destination_equals_source = 1
-shapes = 2**8
+FILES = 1
+RADIUS = 5
+PROB_DO_TRANSFORM = 1
+PROB_SHAPE_DESTINATION_EQUALS_SOURCE = 1
+SHAPES = 2**8
 
-eps=20
-min_samples=64
+EPS = 20
+MIN_SAMPLES = 64
 
-accent_color_percentage = .02
+ACCENT_COLOR_PERCENTAGE = .02
 
-min_width_percentage = .01
-min_height_percentage = .02
-max_width_percentage = .1/GOLDEN_RATIO
-max_height_percentage = .2
+MIN_WIDTH_PERCENTAGE = .01
+MIN_HEIGHT_PERCENTAGE = .02
+MAX_WIDTH_PERCENTAGE = .1/GOLDEN_RATIO
+MAX_HEIGHT_PERCENTAGE = .2
 
-min_dx_percentage = - .1
-min_dy_percentage = - .1
-max_dx_percentage = .6
-max_dy_percentage = .6
+MIN_DX_PERCENTAGE = - .1
+MIN_DY_PERCENTAGE = - .1
+MAX_DX_PERCENTAGE = .6
+MAX_DY_PERCENTAGE = .6
 
-max_fill_alpha = 128
-min_fill_alpha = 32
-max_fill_red = 255
-min_fill_red = 192
-max_fill_green = 255
-min_fill_green = 128
-max_fill_blue = 64
-min_fill_blue = 32
+MAX_FILL_ALPHA = 128
+MIN_FILL_ALPHA = 32
+MAX_FILL_RED = 255
+MIN_FILL_RED = 192
+MAX_FILL_GREEN = 255
+MIN_FILL_GREEN = 128
+MAX_FILL_BLUE = 64
+MIN_FILL_BLUE = 32
 
-max_accent_alpha = 212
-min_accent_alpha = 192
-max_accent_red = 255
-min_accent_red = 192
-max_accent_green = 16
-min_accent_green = 0
-max_accent_blue = 16
-min_accent_blue = 0
+MAX_ACCENT_ALPHA = 212
+MIN_ACCENT_ALPHA = 192
+MAX_ACCENT_RED = 255
+MIN_ACCENT_RED = 192
+MAX_ACCENT_GREEN = 16
+MIN_ACCENT_GREEN = 0
+MAX_ACCENT_BLUE = 16
+MIN_ACCENT_BLUE = 0
 
-max_outline_alpha = 255
-min_outline_alpha = 128
-max_outline_red = 255
-min_outline_red = 0
-max_outline_green = 255
-min_outline_green = 0
-max_outline_blue = 255
-min_outline_blue = 0
+MAX_OUTLINE_ALPHA = 255
+MIN_OUTLINE_ALPHA = 128
+MAX_OUTLINE_RED = 255
+MIN_OUTLINE_RED = 0
+MAX_OUTLINE_GREEN = 255
+MIN_OUTLINE_GREEN = 0
+MAX_OUTLINE_BLUE = 255
+MIN_OUTLINE_BLUE = 0
 
 source_folder = 'input/'
 image_path = 'input/Rhythms_Circle_DataReferenceSet_1982_2.png'
@@ -111,7 +111,7 @@ def visualizeClusters(image, clusters):
 
     return output_image
 
-def findClusters(points, eps=eps, min_samples=min_samples):
+def findClusters(points, eps=EPS, min_samples=MIN_SAMPLES):
     """
     Find clusters of points in an image.
 
@@ -159,30 +159,30 @@ def findOpaquePixels(image):
 def metaPixel(input_path, pdf_canvas, output_image_path):
 
 
-  for file in range(0,files):
+  for file in range(0, FILES):
     print("file", file)
 
   # Open the image
     image = Image.open(input_path)
     image = image.convert('RGBA')
 
-    min_width = image.width * min_width_percentage
-    min_height = image.height *  min_height_percentage
-    max_width = image.width * max_width_percentage/GOLDEN_RATIO
-    max_height = image.height * max_height_percentage
+    min_width = image.width * MIN_WIDTH_PERCENTAGE
+    min_height = image.height * MIN_HEIGHT_PERCENTAGE
+    max_width = image.width * MAX_WIDTH_PERCENTAGE/GOLDEN_RATIO
+    max_height = image.height * MAX_HEIGHT_PERCENTAGE
 
-    min_dx = - image.width * min_dx_percentage
-    min_dy = - image.height * min_dy_percentage
-    max_dx = image.width * max_dx_percentage
-    max_dy = image.height * max_dy_percentage
+    min_dx = - image.width * MIN_DX_PERCENTAGE
+    min_dy = - image.height * MIN_DY_PERCENTAGE
+    max_dx = image.width * MAX_DX_PERCENTAGE
+    max_dy = image.height * MAX_DY_PERCENTAGE
 
     im = make_transparent(image, 32)
     opaque_pixels = findOpaquePixels(image)
 
     edge_pixel_cnt = int(len(opaque_pixels))
-    edge_increment = int((edge_pixel_cnt) / shapes)
+    edge_increment = int((edge_pixel_cnt) / SHAPES)
     start = int(edge_pixel_cnt % edge_increment)
-    for _ in range(0, max_layers):
+    for _ in range(0, MAX_LAYERS):
       print("layer", _)
       # Create a new image with the mesh
       
@@ -194,14 +194,14 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
         if sy < 0 or sx < 0:
           continue
 
-        if random.random() > prob_shape_destination_equals_source:
+        if random.random() > PROB_SHAPE_DESTINATION_EQUALS_SOURCE:
             dx = int(random.uniform(min_dx, max_dx))
             dy = int(random.uniform(min_dy, max_dy))
         else:
             dx = sx
             dy = sy
 
-        fill=randomColor(globals(),"fill") if random.random() > accent_color_percentage else randomColor(globals(),"accent")
+        fill=randomColor(globals(),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(globals(),"ACCENT")
         
 
         (out, mask) = transformed_shape(
@@ -211,7 +211,7 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
             width=width,
             height=height,
             fill=fill,
-            outline=randomColor(globals(),"outline"),
+            outline=randomColor(globals(),"OUTLINE"),
             outline_width=2,
             radius = 5,
             transforms=["blur", "scale"]
@@ -219,15 +219,15 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
 
         image.paste(out, (dx,dy), mask)
 
-    clusters = findClusters(opaque_pixels, min_samples=min_samples, eps=eps)
+    clusters = findClusters(opaque_pixels, min_samples=MIN_SAMPLES, eps=EPS)
     image = visualizeClusters(image, clusters)
           
     filename = f"output/meta_pixel_image{file}.png"
     image.save(filename)
-    if(show_image):
+    if(SHOW_IMAGE):
       image.show(filename)
 
-    if create_pdf:
+    if CREATE_PDF:
       # Add a new page to the PDF with the same size as the image
       pdf_canvas.setPageSize((image.width, image.height))
 
@@ -238,7 +238,7 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
 
 
 
-if create_pdf:      
+if CREATE_PDF:      
 # Open a PDF for writing
   pdf_path = "output/meta_pixel_output.pdf"
   pdf_canvas = canvas.Canvas(pdf_path)
@@ -247,11 +247,11 @@ if create_pdf:
 output_image_path = "output/meta_pixel_image.png"
 metaPixel(image_path, pdf_canvas, output_image_path)
 
-if create_pdf:
+if CREATE_PDF:
   # Save and open the PDF
   pdf_canvas.save()
 
   # Open the PDF (Mac-specific command)
-  if show_pdf:
+  if SHOW_PDF:
     os.system(f"open {pdf_path}")
 
