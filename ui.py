@@ -4,7 +4,7 @@
 '''
 import tkinter as tk
 from tkinter import ttk, filedialog
-from constants import CREATE_PDF, SHOW_PDF, SHOW_IMAGE
+from constants import *
 def initialize(main):
 
 # Function to open file dialog and update input file path

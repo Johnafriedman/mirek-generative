@@ -12,69 +12,14 @@ from PIL.ImageChops import invert
 from PIL.ImageOps import scale
 import numpy as np
 from PIL import Image
-import random, os
+import random, os, datetime
 import cv2
 
-from generative.utilities import make_transparent, transformed_shape, bounding_box_size, randomColor, GOLDEN_RATIO
+import constants as const
+from constants import MIN_DY_PERCENTAGE, MAX_DY_PERCENTAGE, MAX_HEIGHT_PERCENTAGE, EPS, MIN_SAMPLES, FILES, MIN_WIDTH_PERCENTAGE, MIN_HEIGHT_PERCENTAGE, MAX_WIDTH_PERCENTAGE, GOLDEN_RATIO, MIN_DX_PERCENTAGE, MAX_DX_PERCENTAGE, MAX_LAYERS, SHAPES, PROB_SHAPE_DESTINATION_EQUALS_SOURCE, ACCENT_COLOR_PERCENTAGE, OUTPUT_DIR, IMAGE_NAME, IMAGE_DATE, SHOW_IMAGE, CREATE_PDF, INPUT_DIR, IMAGE_EXT, SHOW_PDF
+from utilities import make_transparent, transformed_shape, bounding_box_size, randomColor
+from ui import initialize
 
-
-CREATE_PDF = True
-SHOW_PDF = True
-SHOW_IMAGE = True
-
-MAX_LAYERS = 2
-SHAPES = 2**7
-
-FILES = 1
-RADIUS = 5
-PROB_DO_TRANSFORM = 1
-PROB_SHAPE_DESTINATION_EQUALS_SOURCE = 1
-SHAPES = 2**8
-
-EPS = 20
-MIN_SAMPLES = 64
-
-ACCENT_COLOR_PERCENTAGE = .02
-
-MIN_WIDTH_PERCENTAGE = .01
-MIN_HEIGHT_PERCENTAGE = .02
-MAX_WIDTH_PERCENTAGE = .1/GOLDEN_RATIO
-MAX_HEIGHT_PERCENTAGE = .2
-
-MIN_DX_PERCENTAGE = - .1
-MIN_DY_PERCENTAGE = - .1
-MAX_DX_PERCENTAGE = .6
-MAX_DY_PERCENTAGE = .6
-
-MAX_FILL_ALPHA = 128
-MIN_FILL_ALPHA = 32
-MAX_FILL_RED = 255
-MIN_FILL_RED = 192
-MAX_FILL_GREEN = 255
-MIN_FILL_GREEN = 128
-MAX_FILL_BLUE = 64
-MIN_FILL_BLUE = 32
-
-MAX_ACCENT_ALPHA = 212
-MIN_ACCENT_ALPHA = 192
-MAX_ACCENT_RED = 255
-MIN_ACCENT_RED = 192
-MAX_ACCENT_GREEN = 16
-MIN_ACCENT_GREEN = 0
-MAX_ACCENT_BLUE = 16
-MIN_ACCENT_BLUE = 0
-
-MAX_OUTLINE_ALPHA = 255
-MIN_OUTLINE_ALPHA = 128
-MAX_OUTLINE_RED = 255
-MIN_OUTLINE_RED = 0
-MAX_OUTLINE_GREEN = 255
-MIN_OUTLINE_GREEN = 0
-MAX_OUTLINE_BLUE = 255
-MIN_OUTLINE_BLUE = 0
-
-source_folder = 'input/'
-image_path = 'input/Rhythms_Circle_DataReferenceSet_1982_2.png'
 
 def visualizeClusters(image, clusters):
     """
@@ -201,7 +146,7 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
             dx = sx
             dy = sy
 
-        fill=randomColor(globals(),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(globals(),"ACCENT")
+        fill=randomColor(vars(const),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(vars(const),"ACCENT")
         
 
         (out, mask) = transformed_shape(
@@ -211,10 +156,10 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
             width=width,
             height=height,
             fill=fill,
-            outline=randomColor(globals(),"OUTLINE"),
+            outline=randomColor(vars(const),"OUTLINE"),
             outline_width=2,
             radius = 5,
-            transforms=["blur", "scale"]
+            transforms=["scale","blur"]
         )
 
         image.paste(out, (dx,dy), mask)
@@ -222,7 +167,8 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
     clusters = findClusters(opaque_pixels, min_samples=MIN_SAMPLES, eps=EPS)
     image = visualizeClusters(image, clusters)
           
-    filename = f"output/meta_pixel_image{file}.png"
+    filename = f"{OUTPUT_DIR}/meta-pixel_{IMAGE_NAME}_{IMAGE_DATE}_{file}.png"
+
     image.save(filename)
     if(SHOW_IMAGE):
       image.show(filename)
@@ -236,22 +182,25 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
 
       pdf_canvas.showPage()
 
+def main():
+  if CREATE_PDF:      
+  # Open a PDF for writing
+    pdf_path = f"{OUTPUT_DIR}/{IMAGE_NAME}.pdf"
+    pdf_canvas = canvas.Canvas(pdf_path)
 
+  # Call the metaPixel function
+  output_image_path = "output/meta_pixel_image.png"
+  input_image_path = f"{INPUT_DIR}/{IMAGE_NAME}{IMAGE_EXT}"
+  metaPixel(input_image_path, pdf_canvas, output_image_path)
 
-if CREATE_PDF:      
-# Open a PDF for writing
-  pdf_path = "output/meta_pixel_output.pdf"
-  pdf_canvas = canvas.Canvas(pdf_path)
+  if CREATE_PDF:
+    # Save and open the PDF
+    pdf_canvas.save()
 
-# Call the metaPixel function
-output_image_path = "output/meta_pixel_image.png"
-metaPixel(image_path, pdf_canvas, output_image_path)
+    # Open the PDF (Mac-specific command)
+    if SHOW_PDF:
+      os.system(f"open {pdf_path}")
 
-if CREATE_PDF:
-  # Save and open the PDF
-  pdf_canvas.save()
+initialize(main)
 
-  # Open the PDF (Mac-specific command)
-  if SHOW_PDF:
-    os.system(f"open {pdf_path}")
-
+print(__name__)

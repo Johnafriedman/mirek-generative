@@ -4,7 +4,8 @@ import random
 from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
-from constants.globals import GOLDEN_RATIO
+
+from constants import GOLDEN_RATIO
 
 
 def transformed_shape(image, x, y, width, height, fill, outline, outline_width, radius = 5, transforms = ["blur", "invert", "scale"], shapes=["ellipse","rectangle"],do_transform=True):
@@ -173,3 +174,4 @@ def randomColor(name_space, name):
     int(random.uniform(minb, maxb)), 
     int(random.uniform(mina, maxa))
   )
+
