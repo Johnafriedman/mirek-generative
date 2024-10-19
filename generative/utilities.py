@@ -4,8 +4,8 @@ import random
 from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
+from constants.globals import GOLDEN_RATIO
 
-GOLDEN_RATIO = 1.618
 
 def transformed_shape(image, x, y, width, height, fill, outline, outline_width, radius = 5, transforms = ["blur", "invert", "scale"], shapes=["ellipse","rectangle"],do_transform=True):
 
