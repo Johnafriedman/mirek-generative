@@ -4,36 +4,55 @@
 '''
 import tkinter as tk
 from tkinter import ttk, filedialog
-from constants import *
+import constants as c
+
+import os
+
+def split_file_path(file_path):
+    directory, filename_with_ext = os.path.split(file_path)
+    filename, extension = os.path.splitext(filename_with_ext)
+    return directory, filename, extension
+
+# Example usage
+
+
+
 def initialize(main):
 
 # Function to open file dialog and update input file path
   def select_input_file():
-      file_path = filedialog.askopenfilename(title="Select Input File", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+      file_path = filedialog.askopenfilename(title="Select Input File",
+                                              initialdir=c.INPUT_DIR,
+                                              initialfile=c.IMAGE_NAME,
+                                              defaultextension=c.IMAGE_EXT)
       if file_path:
           input_file_var.set(file_path)
+          directory, filename, extension = split_file_path(file_path)
+          INPUT_DIR = directory
+          IMAGE_NAME = filename
+          IMAGE_EXT = extension
 
-  # Function to update constants based on checkbox states
   def update_constants():
-      CREATE_PDF = create_pdf_var.get()
-      if CREATE_PDF: 
-        show_pdf_checkbox.config(state=tk.NORMAL)
-        SHOW_PDF = show_pdf_var.get()
-      else:
-        SHOW_PDF = False
-        show_pdf_var.set(False)
-        show_pdf_checkbox.config(state=tk.DISABLED)
+    # Function to update constants based on checkbox states
+    CREATE_PDF = create_pdf_var.get()
+    if CREATE_PDF: 
+      show_pdf_checkbox.config(state=tk.NORMAL)
+      SHOW_PDF = show_pdf_var.get()
+    else:
+      SHOW_PDF = False
+      show_pdf_var.set(False)
+      show_pdf_checkbox.config(state=tk.DISABLED)
 
-      SHOW_IMAGE = show_image_var.get()
+    SHOW_IMAGE = show_image_var.get()
 
   # Create the main window
   root = tk.Tk()
   root.title("Meta-Pixel Configuration")
 
   # Create variables for checkboxes
-  create_pdf_var = tk.BooleanVar(value=CREATE_PDF)
-  show_pdf_var = tk.BooleanVar(value=SHOW_PDF)
-  show_image_var = tk.BooleanVar(value=SHOW_IMAGE)
+  create_pdf_var = tk.BooleanVar(value=c.CREATE_PDF)
+  show_pdf_var = tk.BooleanVar(value=c.SHOW_PDF)
+  show_image_var = tk.BooleanVar(value=c.SHOW_IMAGE)
 
   # Create checkboxes
   create_pdf_checkbox = ttk.Checkbutton(root, text="Create PDF", variable=create_pdf_var, command=update_constants)

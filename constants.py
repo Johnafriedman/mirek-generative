@@ -63,8 +63,8 @@ MIN_OUTLINE_GREEN = 0
 MAX_OUTLINE_BLUE = 255
 MIN_OUTLINE_BLUE = 0
 
-INPUT_DIR = 'input'
-OUTPUT_DIR = 'output'
+INPUT_DIR = '../input'
+OUTPUT_DIR = '../output'
 IMAGE_NAME = 'Rhythms_Circle_DataReferenceSet_1982_2'
 IMAGE_EXT = '.png'
 IMAGE_DATE = datetime.datetime.now().strftime('%Y%m%d')
