@@ -8,8 +8,8 @@ from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageTransform import MeshTransform
 
 from generative.transforms import create_randomized_aligned_mesh
-from generative.utilities import transformed_shape, bounding_box_size, make_transparent, randomColor, GOLDEN_RATIO
-
+from utilities import transformed_shape, bounding_box_size, make_transparent, randomColor, GOLDEN_RATIO
+import constants as const
 
 IN_COLAB = 'google.colab' in sys.modules
 test_mesh = False
@@ -51,10 +51,10 @@ source_folder = '/content/' if IN_COLAB else 'input/'
 if test_mesh:
   image_path = 'grid_image.png'
 else:
-  image_name = 'hieroglyphics'
-  image_ext = 'jpg'
-  image_path = f'{image_name}.{image_ext}'
-  image_date = datetime.datetime.now().strftime("%Y%m%d%H%M")
+  image_name = 'Rhythms_Circle_DataReferenceSet_1982_2'
+  image_ext = '.png'
+  image_path = f'{image_name}{image_ext}'
+  image_date = datetime.datetime.now().strftime("%Y%m%d")
 
 
 
@@ -110,8 +110,8 @@ for file in range(0,files):
                 y=sy,
                 width=width,
                 height=height,
-                fill=randomColor(globals(),"fill"),
-                outline=randomColor(globals(),"outline"),
+                fill=randomColor(vars(const),"FILL"),
+                outline=randomColor(vars(const),"OUTLINE"),
                 outline_width=2
             )
       image.paste(out, (dx,dy), mask)
