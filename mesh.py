@@ -7,7 +7,7 @@ import random, sys, datetime
 from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageTransform import MeshTransform
 
-from generative.transforms import create_randomized_aligned_mesh
+from transforms import create_randomized_aligned_mesh
 from utilities import transformed_shape, bounding_box_size, make_transparent, randomColor, GOLDEN_RATIO
 import constants as const
 
@@ -20,7 +20,7 @@ use_mask = True
 max_mesh_width = 4
 max_mesh_height = 6
 max_layers = 5
-files = 5
+files = 1
 shapes = 10
 radius = 5
 prob_do_transform = .9
