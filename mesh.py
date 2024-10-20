@@ -20,7 +20,7 @@ use_mask = True
 max_mesh_width = 4
 max_mesh_height = 6
 max_layers = 5
-files = 1
+files = 4
 shapes = 10
 radius = 5
 prob_do_transform = .9
@@ -51,7 +51,7 @@ source_folder = '/content/' if IN_COLAB else 'input/'
 if test_mesh:
   image_path = 'grid_image.png'
 else:
-  image_name = 'Rhythms_Circle_DataReferenceSet_1982_2'
+  image_name = 'meta-existance'
   image_ext = '.png'
   image_path = f'{image_name}{image_ext}'
   image_date = datetime.datetime.now().strftime("%Y%m%d")
@@ -59,7 +59,7 @@ else:
 
 
 # Open the image
-input_path = f"input/{image_path}"
+input_path = f"../input/{image_path}"
 
 for file in range(0,files):
   image = Image.open(input_path)
@@ -120,7 +120,7 @@ for file in range(0,files):
     draw_mesh(mesh, image)
     '''
     
-  filename = f"output/mesh_{image_name}_{image_date}_{file}.png"
+  filename = f"../output/mesh_{image_name}_{image_date}_{file}.png"
   image.save(filename)
   image.show(filename)
 
