@@ -17,7 +17,13 @@ def split_file_path(file_path):
 
 
 
-def initialize(main):
+def initialize(main, file_path=None):
+  
+  def split_path(file_path):
+    directory, filename, extension = split_file_path(file_path)
+    INPUT_DIR = directory
+    IMAGE_NAME = filename
+    IMAGE_EXT = extension
 
 # Function to open file dialog and update input file path
   def select_input_file():
@@ -27,10 +33,8 @@ def initialize(main):
                                               defaultextension=c.IMAGE_EXT)
       if file_path:
           input_file_var.set(file_path)
-          directory, filename, extension = split_file_path(file_path)
-          INPUT_DIR = directory
-          IMAGE_NAME = filename
-          IMAGE_EXT = extension
+          split_path(file_path)
+
 
   def update_constants():
     # Function to update constants based on checkbox states
@@ -69,7 +73,7 @@ def initialize(main):
   create_button.grid(row=3, column=0, sticky=tk.W, padx=10, pady=5)
 
   # Create variable and label for input file
-  input_file_var = tk.StringVar()
+  input_file_var = tk.StringVar(value=file_path)
   input_file_label = tk.Label(root, text="Input File", width=20)
   input_file_entry = tk.Entry(root, textvariable=input_file_var, width=50)
   input_file_button = ttk.Button(root, text="Select Input File", command=select_input_file)
@@ -79,6 +83,7 @@ def initialize(main):
   input_file_entry.grid(row=5, column=1, padx=10, pady=5)
   input_file_button.grid(row=5, column=2, padx=10, pady=5)
 
+  split_path(file_path)
 
   # Run the main loop
   root.mainloop()

@@ -16,9 +16,9 @@ import random, os, datetime
 import cv2
 
 import constants as const
-from constants import MIN_DY_PERCENTAGE, MAX_DY_PERCENTAGE, MAX_HEIGHT_PERCENTAGE, EPS, MIN_SAMPLES, FILES, MIN_WIDTH_PERCENTAGE, MIN_HEIGHT_PERCENTAGE, MAX_WIDTH_PERCENTAGE, GOLDEN_RATIO, MIN_DX_PERCENTAGE, MAX_DX_PERCENTAGE, MAX_LAYERS, SHAPES, PROB_SHAPE_DESTINATION_EQUALS_SOURCE, ACCENT_COLOR_PERCENTAGE, OUTPUT_DIR, IMAGE_NAME, IMAGE_DATE, SHOW_IMAGE, CREATE_PDF, INPUT_DIR, IMAGE_EXT, SHOW_PDF
+from constants import MAX_SHAPE_LAYERS, MIN_DY_PERCENTAGE, MAX_DY_PERCENTAGE, MAX_HEIGHT_PERCENTAGE, EPS, MIN_SAMPLES, FILES, MIN_WIDTH_PERCENTAGE, MIN_HEIGHT_PERCENTAGE, MAX_WIDTH_PERCENTAGE, GOLDEN_RATIO, MIN_DX_PERCENTAGE, MAX_DX_PERCENTAGE, MAX_LAYERS, SHAPES, PROB_SHAPE_DESTINATION_EQUALS_SOURCE, ACCENT_COLOR_PERCENTAGE, OUTPUT_DIR, IMAGE_NAME, IMAGE_DATE, SHOW_IMAGE, CREATE_PDF, INPUT_DIR, IMAGE_EXT, SHOW_PDF
 from utilities import make_transparent, transformed_shape, bounding_box_size, randomColor
-from ui import initialize
+import ui
 
 
 def visualizeClusters(image, clusters):
@@ -101,7 +101,7 @@ def findOpaquePixels(image):
     return opaque_pixels
 
 
-def metaPixel(input_path, pdf_canvas, output_image_path):
+def metaPixel(input_path, pdf_canvas):
 
 
   for file in range(0, FILES):
@@ -132,37 +132,38 @@ def metaPixel(input_path, pdf_canvas, output_image_path):
       # Create a new image with the mesh
       
       for i in range(start, edge_pixel_cnt, edge_increment):
-        width, height = bounding_box_size(max_width, max_height, min_width, min_height)
+        for shape_layer in range(1, MAX_SHAPE_LAYERS):
+          width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-        sy, sx = opaque_pixels[i] - (height // 2, width // 2)
+          sy, sx = opaque_pixels[i] - (height // 2, width // 2)
 
-        if sy < 0 or sx < 0:
-          continue
+          if sy < 0 or sx < 0:
+            continue
 
-        if random.random() > PROB_SHAPE_DESTINATION_EQUALS_SOURCE:
-            dx = int(random.uniform(min_dx, max_dx))
-            dy = int(random.uniform(min_dy, max_dy))
-        else:
-            dx = sx
-            dy = sy
+          if random.random() > PROB_SHAPE_DESTINATION_EQUALS_SOURCE:
+              dx = int(random.uniform(min_dx, max_dx))
+              dy = int(random.uniform(min_dy, max_dy))
+          else:
+              dx = sx
+              dy = sy
 
-        fill=randomColor(vars(const),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(vars(const),"ACCENT")
-        
+          fill=randomColor(vars(const),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(vars(const),"ACCENT")
+          
 
-        (out, mask) = transformed_shape(
-            image=image,
-            x=sx,
-            y=sy,
-            width=width,
-            height=height,
-            fill=fill,
-            outline=randomColor(vars(const),"OUTLINE"),
-            outline_width=2,
-            radius = 5,
-            transforms=["scale","blur"]
-        )
+          (out, mask) = transformed_shape(
+              image=image,
+              x=sx,
+              y=sy,
+              width=width,
+              height=height,
+              fill=fill,
+              outline=randomColor(vars(const),"OUTLINE"),
+              outline_width=2,
+              radius = 5,
+              transforms=["scale","blur"]
+          )
 
-        image.paste(out, (dx,dy), mask)
+          image.paste(out, (dx,dy), mask)
 
     clusters = findClusters(opaque_pixels, min_samples=MIN_SAMPLES, eps=EPS)
     image = visualizeClusters(image, clusters)
@@ -189,9 +190,7 @@ def main():
     pdf_canvas = canvas.Canvas(pdf_path)
 
   # Call the metaPixel function
-  output_image_path = "output/meta_pixel_image.png"
-  input_image_path = f"{INPUT_DIR}/{IMAGE_NAME}{IMAGE_EXT}"
-  metaPixel(input_image_path, pdf_canvas, output_image_path)
+  metaPixel(input_image_path, pdf_canvas)
 
   if CREATE_PDF:
     # Save and open the PDF
@@ -201,6 +200,8 @@ def main():
     if SHOW_PDF:
       os.system(f"open {pdf_path}")
 
-initialize(main)
+input_image_path = f"{INPUT_DIR}/{IMAGE_NAME}{IMAGE_EXT}"
+
+ui.initialize(main, input_image_path)
 
 print(__name__)
