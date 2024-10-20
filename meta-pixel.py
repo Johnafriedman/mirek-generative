@@ -16,7 +16,7 @@ import random, os, datetime
 import cv2
 
 import constants as const
-from constants import MAX_SHAPE_LAYERS, MIN_DY_PERCENTAGE, MAX_DY_PERCENTAGE, MAX_HEIGHT_PERCENTAGE, EPS, MIN_SAMPLES, FILES, MIN_WIDTH_PERCENTAGE, MIN_HEIGHT_PERCENTAGE, MAX_WIDTH_PERCENTAGE, GOLDEN_RATIO, MIN_DX_PERCENTAGE, MAX_DX_PERCENTAGE, MAX_LAYERS, SHAPES, PROB_SHAPE_DESTINATION_EQUALS_SOURCE, ACCENT_COLOR_PERCENTAGE, OUTPUT_DIR, IMAGE_NAME, IMAGE_DATE, SHOW_IMAGE, CREATE_PDF, INPUT_DIR, IMAGE_EXT, SHOW_PDF
+from constants import *
 from utilities import make_transparent, transformed_shape, bounding_box_size, randomColor
 import ui
 
@@ -129,9 +129,14 @@ def metaPixel(input_path, pdf_canvas):
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, MAX_LAYERS):
       print("layer", _)
+
+
       # Create a new image with the mesh
-      
+      if SAVE_LAYER_IMAGES:
+        overlay = Image.new('RGBA', (image.width, image.height), (0, 0, 0, 0))
+
       for i in range(start, edge_pixel_cnt, edge_increment):
+
         for shape_layer in range(1, MAX_SHAPE_LAYERS):
           width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
@@ -164,6 +169,13 @@ def metaPixel(input_path, pdf_canvas):
           )
 
           image.paste(out, (dx,dy), mask)
+          if SAVE_LAYER_IMAGES:
+            overlay.paste(out, (dx,dy), mask)
+
+      if SAVE_LAYER_IMAGES:
+        filename = f"{OUTPUT_DIR}/meta-pixel_{IMAGE_NAME}_{IMAGE_DATE}_{file}_{_}.png"
+        overlay.save(filename)
+
 
     clusters = findClusters(opaque_pixels, min_samples=MIN_SAMPLES, eps=EPS)
     image = visualizeClusters(image, clusters)
