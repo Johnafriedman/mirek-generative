@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 
 from constants import GOLDEN_RATIO
 from meta_pixel_view import do_meta_pixel
@@ -8,7 +9,6 @@ import datetime
 # Model
 class Model:
     def __init__(self):
-        self.data = "Hello, World!"
         self.create_pdf = True
         self.show_pdf = True
         self.show_image = True
@@ -78,54 +78,74 @@ class BaseWindow(tk.Toplevel):
         tk.Toplevel.__init__(self, parent)
         self.controller = controller
 
-class StartPage(BaseWindow):
+""" class ParametersPage(BaseWindow):
     def __init__(self, parent, controller):
         BaseWindow.__init__(self, parent, controller)
-        self.title("Start Page")
-        label = tk.Label(self, text="This is the start page")
+        self.title("Meta Pixel: Parameters")
+        label = tk.Label(self, text="Parameters of Meta Pixel")
         label.pack(pady=10, padx=10)
-        button = tk.Button(self, text="Go to Page One",
-                           command=lambda: controller.show_window("PageOne"))
-        button.pack()
+        button = tk.Button(self, text="Generate",
+                           command=lambda: controller.show_window("StatusPage"))
+        button.pack() """
 
-class PageOne(BaseWindow):
+""" class StatusPage(BaseWindow):
     def __init__(self, parent, controller):
         BaseWindow.__init__(self, parent, controller)
-        self.title("Page One")
-        label = tk.Label(self, text="This is page one")
+        self.title("Meta Pixel: Status")
+        label = tk.Label(self, text="Generating Meta Pixel")
         label.pack(pady=10, padx=10)
-        button = tk.Button(self, text="Go to Start Page",
-                           command=lambda: controller.show_window("StartPage"))
-        button.pack()
-        do_meta_pixel(controller.model)
+        button = tk.Button(self, text="Go to Parameters Page",
+                           command=lambda: controller.show_window("ParametersPage"))
+        button.pack() """
 
 # Controller
 class Controller(tk.Tk):
     def __init__(self, model):
         tk.Tk.__init__(self)
         self.model = model
-        self.title("Main Window")
-        self.geometry("400x300")
+        self.title("Meta Pixel")
+        self.geometry("800x600")
 
-        button_start = tk.Button(self, text="Open Start Page",
-                                 command=lambda: self.show_window("StartPage"))
+        self.label_input_path = tk.Label(self, text=self.model.input_path)
+        self.label_input_path.pack(pady=10)
+
+        button_select_file = tk.Button(self, text="Select Input File",
+                                       command=self.select_file)
+        button_select_file.pack(pady=10)
+
+        button_generate = tk.Button(self, text="Generate Meta Pixel",
+                                    command=lambda: do_meta_pixel(self.model))
+        button_generate.pack(pady=10)
+
+    def select_file(self):
+        input_path = filedialog.askopenfilename(title="Select Input File",
+                                                           filetypes=(("PNG files", "*.png"), ("JPG files", "*.jpg")))
+        self.model.input_path = input_path
+        self.label_input_path.config(text=self.model.input_path)
+
+        if self.model.input_path:
+            print(f"Selected file: {self.model.input_path}")
+        """ 
+        button_start = tk.Button(self, text="Generate Meta Pixel",
+                                 command=lambda: self.show_window("ParametersPage"))
         button_start.pack(pady=10)
 
         button_page_one = tk.Button(self, text="Open Page One",
                                     command=lambda: self.show_window("PageOne"))
         button_page_one.pack(pady=10)
-
+        """
         self.windows = {}
 
     def show_window(self, window_name):
         if window_name in self.windows:
             self.windows[window_name].deiconify()
         else:
-            if window_name == "StartPage":
+
+            """ if window_name == "StartPage":
                 window = StartPage(self, self)
             elif window_name == "PageOne":
                 window = PageOne(self, self)
-            self.windows[window_name] = window
+            self.windows[window_name] = window """
 
 # Main Application
 if __name__ == "__main__":
