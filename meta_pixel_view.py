@@ -12,13 +12,11 @@ from PIL.ImageChops import invert
 from PIL.ImageOps import scale
 import numpy as np
 from PIL import Image
-import random, os, datetime
+import random, os
 import cv2
 
-import constants as const
 from constants import *
-from utilities import make_transparent, transformed_shape, bounding_box_size, randomColor
-import ui
+from utilities import make_transparent, transformed_shape, bounding_box_size, random_color
 
 
 def visualizeClusters(image, clusters):
@@ -56,7 +54,7 @@ def visualizeClusters(image, clusters):
 
     return output_image
 
-def findClusters(points, eps=EPS, min_samples=MIN_SAMPLES):
+def findClusters(points, eps, min_samples):
     """
     Find clusters of points in an image.
 
@@ -100,44 +98,41 @@ def findOpaquePixels(image):
     opaque_pixels = np.argwhere(edges != 0)
     return opaque_pixels
 
+def meta_pixel(m, pdf_canvas):
 
-def metaPixel(input_path, pdf_canvas):
-
-
-  for file in range(0, FILES):
+  for file in range(0, m.files):
     print("file", file)
 
-  # Open the image
-    image = Image.open(input_path)
+    # Open the image
+    image = Image.open(m.input_path)
     image = image.convert('RGBA')
 
-    min_width = image.width * MIN_WIDTH_PERCENTAGE
-    min_height = image.height * MIN_HEIGHT_PERCENTAGE
-    max_width = image.width * MAX_WIDTH_PERCENTAGE/GOLDEN_RATIO
-    max_height = image.height * MAX_HEIGHT_PERCENTAGE
+    min_width = image.width * m.min_width_percentage
+    min_height = image.height * m.min_height_percentage
+    max_width = image.width * m.max_width_percentage/GOLDEN_RATIO
+    max_height = image.height * m.max_height_percentage
 
-    min_dx = - image.width * MIN_DX_PERCENTAGE
-    min_dy = - image.height * MIN_DY_PERCENTAGE
-    max_dx = image.width * MAX_DX_PERCENTAGE
-    max_dy = image.height * MAX_DY_PERCENTAGE
+    min_dx = - image.width * m.min_dx_percentage
+    min_dy = - image.height * m.min_dy_percentage
+    max_dx = image.width * m.max_dx_percentage
+    max_dy = image.height * m.max_dy_percentage
 
     im = make_transparent(image, 32)
     opaque_pixels = findOpaquePixels(image)
 
     edge_pixel_cnt = int(len(opaque_pixels))
-    edge_increment = int((edge_pixel_cnt) / SHAPES)
+    edge_increment = int((edge_pixel_cnt) / m.shapes)
     start = int(edge_pixel_cnt % edge_increment)
-    for _ in range(0, MAX_LAYERS):
+    for _ in range(0, m.max_layers):
       print("layer", _)
 
-
       # Create a new image with the mesh
-      if SAVE_LAYER_IMAGES:
+      if m.save_layer_images:
         overlay = Image.new('RGBA', (image.width, image.height), (0, 0, 0, 0))
 
       for i in range(start, edge_pixel_cnt, edge_increment):
 
-        for shape_layer in range(1, MAX_SHAPE_LAYERS):
+        for shape_layer in range(1, m.max_shape_layers):
           width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
           sy, sx = opaque_pixels[i] - (height // 2, width // 2)
@@ -145,15 +140,14 @@ def metaPixel(input_path, pdf_canvas):
           if sy < 0 or sx < 0:
             continue
 
-          if random.random() > PROB_SHAPE_DESTINATION_EQUALS_SOURCE:
+          if random.random() > m.prob_shape_destination_equals_source:
               dx = int(random.uniform(min_dx, max_dx))
               dy = int(random.uniform(min_dy, max_dy))
           else:
               dx = sx
               dy = sy
 
-          fill=randomColor(vars(const),"FILL") if random.random() > ACCENT_COLOR_PERCENTAGE else randomColor(vars(const),"ACCENT")
-          
+          fill = random_color(vars(m), "fill") if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
 
           (out, mask) = transformed_shape(
               image=image,
@@ -162,31 +156,30 @@ def metaPixel(input_path, pdf_canvas):
               width=width,
               height=height,
               fill=fill,
-              outline=randomColor(vars(const),"OUTLINE"),
+              outline=random_color(vars(m), "outline"),
               outline_width=2,
-              radius = 5,
-              transforms=["scale","blur"]
+              radius=5,
+              transforms=["scale", "blur"]
           )
 
-          image.paste(out, (dx,dy), mask)
-          if SAVE_LAYER_IMAGES:
-            overlay.paste(out, (dx,dy), mask)
+          image.paste(out, (dx, dy), mask)
+          if m.save_layer_images:
+            overlay.paste(out, (dx, dy), mask)
 
-      if SAVE_LAYER_IMAGES:
-        filename = f"{OUTPUT_DIR}/meta-pixel_{IMAGE_NAME}_{IMAGE_DATE}_{file}_{_}.png"
+      if m.save_layer_images:
+        filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
         overlay.save(filename)
 
-
-    clusters = findClusters(opaque_pixels, min_samples=MIN_SAMPLES, eps=EPS)
+    clusters = findClusters(opaque_pixels, min_samples=m.min_samples, eps=m.eps)
     image = visualizeClusters(image, clusters)
           
-    filename = f"{OUTPUT_DIR}/meta-pixel_{IMAGE_NAME}_{IMAGE_DATE}_{file}.png"
+    filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
     image.save(filename)
-    if(SHOW_IMAGE):
+    if m.show_image:
       image.show(filename)
 
-    if CREATE_PDF:
+    if m.create_pdf:
       # Add a new page to the PDF with the same size as the image
       pdf_canvas.setPageSize((image.width, image.height))
 
@@ -195,25 +188,21 @@ def metaPixel(input_path, pdf_canvas):
 
       pdf_canvas.showPage()
 
-def main():
-  if CREATE_PDF:      
+def do_meta_pixel(m):
+  if m.create_pdf:      
   # Open a PDF for writing
-    pdf_path = f"{OUTPUT_DIR}/{IMAGE_NAME}.pdf"
-    pdf_canvas = canvas.Canvas(pdf_path)
+    m.pdf_path = f"{m.output_dir}/{m.image_name}.pdf"
+    pdf_canvas = canvas.Canvas(m.pdf_path)
+    
+    m.input_image_path = f"{m.input_dir}/{m.image_name}{m.image_ext}"
 
   # Call the metaPixel function
-  metaPixel(input_image_path, pdf_canvas)
+  meta_pixel(m, pdf_canvas)
 
-  if CREATE_PDF:
+  if m.create_pdf:
     # Save and open the PDF
     pdf_canvas.save()
 
     # Open the PDF (Mac-specific command)
-    if SHOW_PDF:
-      os.system(f"open {pdf_path}")
-
-input_image_path = f"{INPUT_DIR}/{IMAGE_NAME}{IMAGE_EXT}"
-
-ui.initialize(main, input_image_path)
-
-print(__name__)
+    if m.show_pdf:
+      os.system(f"open {m.pdf_path}")
