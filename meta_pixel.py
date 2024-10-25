@@ -106,16 +106,32 @@ class Controller(tk.Tk):
         self.title("Meta Pixel")
         self.geometry("800x600")
 
-        self.label_input_path = tk.Label(self, text=self.model.input_path)
-        self.label_input_path.pack(pady=10)
+        # Create a frame for the input path
+        frame_input_path = tk.Frame(self)
+        frame_input_path.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
-        button_select_file = tk.Button(self, text="Select Input File",
-                                       command=self.select_file)
-        button_select_file.pack(pady=10)
+        self.label_input_path = tk.Label(frame_input_path, text=self.model.input_path)
+        self.label_input_path.grid(row=0, column=0, padx=10, pady=10)
 
-        button_generate = tk.Button(self, text="Generate Meta Pixel",
-                                    command=lambda: do_meta_pixel(self.model))
-        button_generate.pack(pady=10)
+        button_select_file = tk.Button(frame_input_path, text="Select Input File",
+                           command=self.select_file)
+        button_select_file.grid(row=0, column=1, padx=10, pady=10)
+
+        # Create a frame for the generate button
+        frame_generate = tk.Frame(self)
+        frame_generate.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+        button_generate = tk.Button(frame_generate, text="Generate Meta Pixel",
+                        command=lambda: do_meta_pixel(self.model))
+        button_generate.grid(row=0, column=0, padx=10, pady=10)
+
+        # Configure grid weights to make the layout responsive
+        self.grid_columnconfigure(0, weight=1)
+        frame_input_path.grid_columnconfigure(0, weight=1)
+        frame_input_path.grid_columnconfigure(1, weight=0)
+        frame_generate.grid_columnconfigure(0, weight=1)
+
+
 
     def select_file(self):
         input_path = filedialog.askopenfilename(title="Select Input File",
