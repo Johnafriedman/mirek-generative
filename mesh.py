@@ -8,119 +8,120 @@ from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageTransform import MeshTransform
 
 from transforms import create_randomized_aligned_mesh
-from utilities import transformed_shape, bounding_box_size, make_transparent, randomColor, GOLDEN_RATIO
+from utilities import transformed_shape, bounding_box_size, make_transparent, random_color, GOLDEN_RATIO
 import constants as const
 
-IN_COLAB = 'google.colab' in sys.modules
 test_mesh = False
 
+def do_mesh(m):
 
+  
+  for file in range(0,m.files):
+    image = Image.open(m.input_path)
+    image = image.convert('RGBA')
 
-use_mask = True
-max_mesh_width = 4
-max_mesh_height = 6
-max_layers = 5
-files = 4
-shapes = 10
-radius = 5
-prob_do_transform = .9
-prob_shape_destination_equals_source = .5
-transparent_threshold = 128
-transparent_above = True
+    m.min_width = image.width * .05
+    m.min_height = image.height * .06
+    m.max_width = image.width * .5/GOLDEN_RATIO
+    m.max_height = image.height * .6
 
-max_fill_alpha = 255
-min_fill_alpha = 0
-max_fill_red = 255
-min_fill_red = 0
-max_fill_green = 255
-min_fill_green = 0
-max_fill_blue = 255
-min_fill_blue = 0
+    m.min_dx = - image.width * .1
+    m.min_dy = - image.height * .1
+    m.max_dx = image.width * .9
+    m.max_dy = image.height * .9
 
-max_outline_alpha = 255
-min_outline_alpha = 0
-max_outline_red = 255
-min_outline_red = 0
-max_outline_green = 255
-min_outline_green = 0
-max_outline_blue = 255
-min_outline_blue = 0
+    im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
 
-source_folder = '/content/' if IN_COLAB else 'input/'
+    layers = int(random.uniform(2, m.max_layers))
+    for _ in range(0, layers):
+      # Apply the mesh transform
+      width = int(random.uniform(2, m.max_mesh_width))
+      height = int(random.uniform(2, m.max_mesh_height))
+      mesh = create_randomized_aligned_mesh(width,height,im.width,im.height)
+      # Create a new image with the mesh
+      out = im.transform(im.size, MeshTransform(mesh))
+      mask = out if m.use_mask else None
+      #draw the transformed image on the original using a mask
+      image.paste(out, None, mask)
+      
+      for shape in range(0,m.shapes):
 
-if test_mesh:
-  image_path = 'grid_image.png'
-else:
-  image_name = 'meta-existance'
-  image_ext = '.png'
-  image_path = f'{image_name}{image_ext}'
-  image_date = datetime.datetime.now().strftime("%Y%m%d")
+        width = int(random.uniform(m.min_width, m.max_width))
+        height = int(random.uniform(m.min_height, m.max_height))
+        sx = int(random.uniform(m.min_dx, m.max_dx))
+        sy = int(random.uniform(m.min_dy, m.max_dy))
+        if random.random() > m.prob_shape_destination_equals_source:
+          dx = int(random.uniform(m.min_dx, m.max_dx))
+          dy = int(random.uniform(m.min_dy, m.max_dy))
+        else:
+          dx = sx
+          dy = sy
 
+        width, height = bounding_box_size(m.max_width, m.max_height, m.min_width, m.min_height)
 
+        (out, mask) = transformed_shape(
+                  image=image,
+                  x=sx,
+                  y=sy,
+                  width=width,
+                  height=height,
+                  fill=random_color(vars(m),"fill"),
+                  outline=random_color(vars(m),"outline"),
+                  outline_width=2
+              )
+        image.paste(out, (dx,dy), mask)
 
-# Open the image
-input_path = f"../input/{image_path}"
+    '''if test_mesh:
+      draw_mesh(mesh, image)
+      '''
+      
+    filename = f"output/mesh_{m.image_name}_{m.image_date}_{file}.png"
+    image.save(filename)
+    image.show(filename)
 
-for file in range(0,files):
-  image = Image.open(input_path)
-  image = image.convert('RGBA')
+if __name__ == '__main__':
+  # Model
+  class Model:
+      def __init__(self):
+        self.use_mask = True
+        self.max_mesh_width = 4
+        self.max_mesh_height = 6
+        self.max_layers = 5
+        self.files = 4
+        self.shapes = 10
+        self.radius = 5
+        self.prob_do_transform = .9
+        self.prob_shape_destination_equals_source = .5
+        self.transparent_threshold = 128
+        self.transparent_above = True
 
-  min_width = image.width * .05
-  min_height = image.height * .06
-  max_width = image.width * .5/GOLDEN_RATIO
-  max_height = image.height * .6
+        self.max_fill_alpha = 255
+        self.min_fill_alpha = 0
+        self.max_fill_red = 255
+        self.min_fill_red = 0
+        self.max_fill_green = 255
+        self.min_fill_green = 0
+        self.max_fill_blue = 255
+        self.min_fill_blue = 0
 
-  min_dx = - image.width * .1
-  min_dy = - image.height * .1
-  max_dx = image.width * .9
-  max_dy = image.height * .9
+        self.max_outline_alpha = 255
+        self.min_outline_alpha = 0
+        self.max_outline_red = 255
+        self.min_outline_red = 0
+        self.max_outline_green = 255
+        self.min_outline_green = 0
+        self.max_outline_blue = 255
+        self.min_outline_blue = 0
+        self.source_folder = 'input/'
+        if test_mesh:
+          self.image_path = 'grid_image.png'
+        else:
+          self.image_name = 'meta-existance'
+          self.image_ext = '.png'
+          self.image_path = f'{self.image_name}{self.image_ext}'
+          self.image_date = datetime.datetime.now().strftime("%Y%m%d")
 
-  im = make_transparent(image, transparent_threshold, above=transparent_above)
+          self.input_path = f"input/{self.image_path}"
 
-  layers = int(random.uniform(2, max_layers))
-  for _ in range(0, layers):
-    # Apply the mesh transform
-    width = int(random.uniform(2, max_mesh_width))
-    height = int(random.uniform(2, max_mesh_height))
-    mesh = create_randomized_aligned_mesh(width,height,im.width,im.height)
-    # Create a new image with the mesh
-    out = im.transform(im.size, MeshTransform(mesh))
-    mask = out if use_mask else None
-    #draw the transformed image on the original using a mask
-    image.paste(out, None, mask)
-    
-    for shape in range(0,shapes):
-
-      width = int(random.uniform(min_width, max_width))
-      height = int(random.uniform(min_height, max_height))
-      sx = int(random.uniform(min_dx, max_dx))
-      sy = int(random.uniform(min_dy, max_dy))
-      if random.random() > prob_shape_destination_equals_source:
-        dx = int(random.uniform(min_dx, max_dx))
-        dy = int(random.uniform(min_dy, max_dy))
-      else:
-        dx = sx
-        dy = sy
-
-      width, height = bounding_box_size(max_width, max_height, min_width, min_height)
-
-      (out, mask) = transformed_shape(
-                image=image,
-                x=sx,
-                y=sy,
-                width=width,
-                height=height,
-                fill=randomColor(vars(const),"FILL"),
-                outline=randomColor(vars(const),"OUTLINE"),
-                outline_width=2
-            )
-      image.paste(out, (dx,dy), mask)
-
-  '''if test_mesh:
-    draw_mesh(mesh, image)
-    '''
-    
-  filename = f"../output/mesh_{image_name}_{image_date}_{file}.png"
-  image.save(filename)
-  image.show(filename)
-
+  m = Model()
+  do_mesh(m)
