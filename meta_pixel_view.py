@@ -117,7 +117,7 @@ def meta_pixel(m, pdf_canvas):
     max_dx = image.width * m.max_dx_percentage
     max_dy = image.height * m.max_dy_percentage
 
-    im = make_transparent(image, 32)
+    im = make_transparent(image, m.transparent_threshold)
     opaque_pixels = findOpaquePixels(image)
 
     edge_pixel_cnt = int(len(opaque_pixels))
