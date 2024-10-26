@@ -4,7 +4,7 @@ from tkinter import filedialog
 
 from constants import GOLDEN_RATIO
 from meta_pixel_view import do_meta_pixel
-import datetime
+import datetime, os
 
 # Model
 class Model:
@@ -22,6 +22,7 @@ class Model:
         self.radius = 5
         self.prob_do_transform = 1
         self.prob_shape_destination_equals_source = 1
+        self.transparent_threshold = 32
 
         self.eps = 20
         self.min_samples = 64
@@ -100,22 +101,42 @@ class BaseWindow(tk.Toplevel):
 
 # Controller
 class Controller(tk.Tk):
+
     def __init__(self, model):
         tk.Tk.__init__(self)
         self.model = model
         self.title("Meta Pixel")
         self.geometry("800x600")
 
-        # Create a frame for the input path
-        frame_input_path = tk.Frame(self)
-        frame_input_path.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        # Create a frame for the content
+        self.content_frame = tk.Frame(self)
+        self.content_frame.grid(row=0, column=0, sticky="nsew")
 
-        self.label_input_path = tk.Label(frame_input_path, text=self.model.input_path)
-        self.label_input_path.grid(row=0, column=0, padx=10, pady=10)
+        # Configure grid weights to make the layout responsive
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame.grid_columnconfigure(0, weight=1)
 
-        button_select_file = tk.Button(frame_input_path, text="Select Input File",
-                           command=self.select_file)
-        button_select_file.grid(row=0, column=1, padx=10, pady=10)
+        # Create a frame for files with 7 rows and 6 columns
+        self.file_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=100)
+        self.file_frame.grid(row=0, column=0, padx=10, sticky="nsew")
+
+        # Configure grid weights for the file frame
+        for i in range(7):
+            self.file_frame.grid_rowconfigure(i, weight=1)
+        for j in range(6):
+            self.file_frame.grid_columnconfigure(j, weight=0)
+
+        # Place a label "Files" in row 0, column 0
+        label_files = tk.Label(self.file_frame, text="Files")
+        label_files.grid(row=0, column=0, padx=10, sticky="w")
+
+        # Initialize the files frame
+        self.init_input_file()
+        self.init_output_file()
+        
+        '''
 
         # Create a frame for the generate button
         frame_generate = tk.Frame(self)
@@ -130,17 +151,101 @@ class Controller(tk.Tk):
         frame_input_path.grid_columnconfigure(0, weight=1)
         frame_input_path.grid_columnconfigure(1, weight=0)
         frame_generate.grid_columnconfigure(0, weight=1)
+        '''
+    def init_output_file(self):
+        # Place a label "Output" in row 3, column 1
+        self.label_output = tk.Label(self.file_frame, text="Output")
+        self.label_output.grid(row=3, column=1, padx=10, pady=0, sticky="w")
+
+        # Entry for output_dir in row 4, column 1
+        self.entry_output_dir = tk.Entry(self.file_frame)
+        self.entry_output_dir.grid(row=4, column=1, padx=10, pady=0, sticky="ew")
+        self.entry_output_dir.insert(0, self.model.output_dir)
+
+        # Entry for output_name
+        self.entry_output_name = tk.Entry(self.file_frame)
+        self.entry_output_name.grid(row=4, column=2, padx=10, pady=0, sticky="ew")
+        self.entry_output_name.insert(0, self.model.image_name)
+
+        # Entry for output_ext
+        self.entry_output_ext = tk.Entry(self.file_frame)
+        self.entry_output_ext.grid(row=4, column=3, padx=10, pady=0, sticky="ew")
+        self.entry_output_ext.insert(0, self.model.image_ext)
+
+        # Button for output_select
+        self.button_output_select = tk.Button(self.file_frame, text="Select Output File", command=self.select_output_file)
+        self.button_output_select.grid(row=4, column=4, padx=10, pady=0, sticky="ew")
+
+    def select_output_file(self):
+        files = [("PNG files", "*.png"), ("JPG files", "*.jpg")]
+        output_path = filedialog.asksaveasfilename(title="Select Output File", filetypes=files)
+        self.model.output_path = output_path
+        directory, name = os.path.split(output_path)
+        name, ext = os.path.splitext(name)    
+        self.model.output_dir = directory
+        self.model.image_name = name
+        self.model.image_ext = ext
+
+        self.entry_output_dir.delete(0, tk.END)
+        self.entry_output_dir.insert(0, directory)
+
+        self.entry_output_name.delete(0, tk.END)
+        self.entry_output_name.insert(0, name)
+
+        self.entry_output_ext.delete(0, tk.END)
+        self.entry_output_ext.insert(0, ext)
+
+        if self.model.output_path:
+            print(f"Selected file: {self.model.output_path}")
 
 
+    def init_input_file(self):
+        # Place a label "Input" in row 1, column 1
+        self.label_input = tk.Label(self.file_frame, text="Input")
+        self.label_input.grid(row=1, column=1, padx=10, pady=0, sticky="w")
 
-    def select_file(self):
-        input_path = filedialog.askopenfilename(title="Select Input File",
-                                                           filetypes=(("PNG files", "*.png"), ("JPG files", "*.jpg")))
+        # Entry for input_dir in row 2, column 1
+        self.entry_input_dir = tk.Entry(self.file_frame)
+        self.entry_input_dir.grid(row=2, column=1, padx=10, pady=0, sticky="ew")
+        self.entry_input_dir.insert(0, self.model.input_dir)
+
+        # Entry for input_name
+        self.entry_input_name = tk.Entry(self.file_frame)
+        self.entry_input_name.grid(row=2, column=2, padx=10, pady=0, sticky="ew")
+        self.entry_input_name.insert(0, self.model.image_name)
+
+        # Entry for input_ext
+        self.entry_input_ext = tk.Entry(self.file_frame)
+        self.entry_input_ext.grid(row=2, column=3, padx=10, pady=0, sticky="ew")
+        self.entry_input_ext.insert(0, self.model.image_ext)
+
+        # Button for input_select
+        self.button_input_select = tk.Button(self.file_frame, text="Select Input File", command=self.select_input_file)
+        self.button_input_select.grid(row=2, column=4, padx=10, pady=0, sticky="ew")
+
+    def select_input_file(self):
+        files = [("PNG files", "*.png"), ("JPG files", "*.jpg")]
+        input_path = filedialog.askopenfilename(title="Select input File", filetypes=files)
         self.model.input_path = input_path
-        self.label_input_path.config(text=self.model.input_path)
+        directory, name = os.path.split(input_path)
+        name, ext = os.path.splitext(name)    
+        self.model.input_dir = directory
+        self.model.image_name = name
+        self.model.image_ext = ext
+
+        self.entry_input_dir.insert(0, directory)
+
+        self.entry_input_name.delete(0, tk.END)
+        self.entry_input_name.insert(0, name)
+
+        self.entry_input_ext.delete(0, tk.END)
+        self.entry_input_ext.insert(0, ext)
 
         if self.model.input_path:
             print(f"Selected file: {self.model.input_path}")
+
+
+
         """ 
         button_start = tk.Button(self, text="Generate Meta Pixel",
                                  command=lambda: self.show_window("ParametersPage"))
