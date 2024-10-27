@@ -162,42 +162,16 @@ class Controller(tk.Tk):
         self.entry_output_dir.grid(row=4, column=1, padx=10, pady=0, sticky="ew")
         self.entry_output_dir.insert(0, self.model.output_dir)
 
-        # Entry for output_name
-        self.entry_output_name = tk.Entry(self.file_frame)
-        self.entry_output_name.grid(row=4, column=2, padx=10, pady=0, sticky="ew")
-        self.entry_output_name.insert(0, self.model.image_name)
-
-        # Entry for output_ext
-        self.entry_output_ext = tk.Entry(self.file_frame)
-        self.entry_output_ext.grid(row=4, column=3, padx=10, pady=0, sticky="ew")
-        self.entry_output_ext.insert(0, self.model.image_ext)
-
         # Button for output_select
-        self.button_output_select = tk.Button(self.file_frame, text="Select Output File", command=self.select_output_file)
+        self.button_output_select = tk.Button(self.file_frame, text="Select Output Directory", command=self.select_output_directory)
         self.button_output_select.grid(row=4, column=4, padx=10, pady=0, sticky="ew")
 
-    def select_output_file(self):
-        files = [("PNG files", "*.png"), ("JPG files", "*.jpg")]
-        output_path = filedialog.asksaveasfilename(title="Select Output File", filetypes=files)
-        self.model.output_path = output_path
-        directory, name = os.path.split(output_path)
-        name, ext = os.path.splitext(name)    
+    def select_output_directory(self):
+        directory =  filedialog.askdirectory(title="Select Output Directory")
         self.model.output_dir = directory
-        self.model.image_name = name
-        self.model.image_ext = ext
 
         self.entry_output_dir.delete(0, tk.END)
         self.entry_output_dir.insert(0, directory)
-
-        self.entry_output_name.delete(0, tk.END)
-        self.entry_output_name.insert(0, name)
-
-        self.entry_output_ext.delete(0, tk.END)
-        self.entry_output_ext.insert(0, ext)
-
-        if self.model.output_path:
-            print(f"Selected file: {self.model.output_path}")
-
 
     def init_input_file(self):
         # Place a label "Input" in row 1, column 1
