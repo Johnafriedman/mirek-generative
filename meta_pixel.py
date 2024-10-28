@@ -22,8 +22,15 @@ class Model:
         self.radius = 5
         self.prob_do_transform = 1
         self.prob_shape_destination_equals_source = 1
-        self.transparent_threshold = 32
+        self.transparent_threshold = 128
+        self.transparent_above_threshold = True
 
+        # Edge detection
+        self.edge_min = 100 # 0 - 255
+        self.edge_max = 200
+        self.edge_aperture = 3
+
+        # Clustering
         self.eps = 20
         self.min_samples = 64
 
@@ -118,23 +125,27 @@ class Controller(tk.Tk):
         self.content_frame.grid_rowconfigure(0, weight=1)
         self.content_frame.grid_columnconfigure(0, weight=1)
 
-        # Create a frame for files with 7 rows and 6 columns
+        # Create a frame for files with 6 rows and 5 columns
         self.file_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=100)
         self.file_frame.grid(row=0, column=0, padx=10, sticky="nsew")
 
         # Configure grid weights for the file frame
-        for i in range(7):
+        for i in range(6):
             self.file_frame.grid_rowconfigure(i, weight=1)
-        for j in range(6):
-            self.file_frame.grid_columnconfigure(j, weight=0)
 
-        # Place a label "Files" in row 0, column 0
-        label_files = tk.Label(self.file_frame, text="Files")
-        label_files.grid(row=0, column=0, padx=10, sticky="w")
+        self.file_frame.grid_columnconfigure(0, weight=2)
+        self.file_frame.grid_columnconfigure(0, weight=2)
+        self.file_frame.grid_columnconfigure(0, weight=1)
+        self.file_frame.grid_columnconfigure(0, weight=1)
+        self.file_frame.grid_columnconfigure(0, weight=0)
 
         # Initialize the files frame
         self.init_input_file()
         self.init_output_file()
+
+        button_generate = tk.Button(self.content_frame, text="Generate Meta Pixel",
+                        command=lambda: do_meta_pixel(self.model))
+        button_generate.grid(row=0, column=0, padx=10, pady=10)
         
         '''
 
@@ -153,18 +164,18 @@ class Controller(tk.Tk):
         frame_generate.grid_columnconfigure(0, weight=1)
         '''
     def init_output_file(self):
-        # Place a label "Output" in row 3, column 1
+        # Place a label "Output" in row 2, column 0
         self.label_output = tk.Label(self.file_frame, text="Output")
-        self.label_output.grid(row=3, column=1, padx=10, pady=0, sticky="w")
+        self.label_output.grid(row=2, column=0, padx=10, pady=0, sticky="w")
 
-        # Entry for output_dir in row 4, column 1
+        # Entry for output_dir in row 3, column 0
         self.entry_output_dir = tk.Entry(self.file_frame)
-        self.entry_output_dir.grid(row=4, column=1, padx=10, pady=0, sticky="ew")
+        self.entry_output_dir.grid(row=3, column=0, padx=10, pady=0, sticky="ew")
         self.entry_output_dir.insert(0, self.model.output_dir)
 
         # Button for output_select
         self.button_output_select = tk.Button(self.file_frame, text="Select Output Directory", command=self.select_output_directory)
-        self.button_output_select.grid(row=4, column=4, padx=10, pady=0, sticky="ew")
+        self.button_output_select.grid(row=3, column=3, padx=10, pady=0, sticky="ew")
 
     def select_output_directory(self):
         directory =  filedialog.askdirectory(title="Select Output Directory")
@@ -174,28 +185,28 @@ class Controller(tk.Tk):
         self.entry_output_dir.insert(0, directory)
 
     def init_input_file(self):
-        # Place a label "Input" in row 1, column 1
+        # Place a label "Input" in row 0, column 0
         self.label_input = tk.Label(self.file_frame, text="Input")
-        self.label_input.grid(row=1, column=1, padx=10, pady=0, sticky="w")
+        self.label_input.grid(row=0, column=0, padx=10, pady=0, sticky="w")
 
-        # Entry for input_dir in row 2, column 1
+        # Entry for input_dir in row 1, column 0
         self.entry_input_dir = tk.Entry(self.file_frame)
-        self.entry_input_dir.grid(row=2, column=1, padx=10, pady=0, sticky="ew")
+        self.entry_input_dir.grid(row=1, column=0, columnspan=1, padx=10, pady=0, sticky="ew")
         self.entry_input_dir.insert(0, self.model.input_dir)
 
         # Entry for input_name
         self.entry_input_name = tk.Entry(self.file_frame)
-        self.entry_input_name.grid(row=2, column=2, padx=10, pady=0, sticky="ew")
+        self.entry_input_name.grid(row=1, column=2, columnspan=2, padx=10, pady=0, sticky="ew")
         self.entry_input_name.insert(0, self.model.image_name)
 
         # Entry for input_ext
         self.entry_input_ext = tk.Entry(self.file_frame)
-        self.entry_input_ext.grid(row=2, column=3, padx=10, pady=0, sticky="ew")
+        self.entry_input_ext.grid(row=1, column=4, padx=2, pady=0, sticky="ew")
         self.entry_input_ext.insert(0, self.model.image_ext)
 
         # Button for input_select
         self.button_input_select = tk.Button(self.file_frame, text="Select Input File", command=self.select_input_file)
-        self.button_input_select.grid(row=2, column=4, padx=10, pady=0, sticky="ew")
+        self.button_input_select.grid(row=1, column=5, padx=10, pady=0, sticky="ew")
 
     def select_input_file(self):
         files = [("PNG files", "*.png"), ("JPG files", "*.jpg")]
