@@ -7,7 +7,7 @@ from reportlab.lib.units import inch
 from sklearn.cluster import DBSCAN
 
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
 import numpy as np
@@ -84,7 +84,7 @@ def findClusters(points, eps, min_samples):
 # clusters = findClusters(image, edges)
 # print(clusters)
 
-def findEdges(image):
+def findEdges(image, minimum = 100, maximum = 200, apertureSize = 3):
 
     mask_array = np.array(image)
 
@@ -92,7 +92,7 @@ def findEdges(image):
     gray_mask = cv2.cvtColor(mask_array, cv2.COLOR_RGBA2GRAY)
 
     # Apply Canny edge detection
-    edges = cv2.Canny(gray_mask, 100, 200)
+    edges = cv2.Canny(gray_mask, minimum, maximum, 3)
 
     # Iterate through the edges to find edge pixels
     edges = np.argwhere(edges != 0)
@@ -117,7 +117,7 @@ def meta_pixel(m, pdf_canvas):
     max_dx = image.width * m.max_dx_percentage
     max_dy = image.height * m.max_dy_percentage
 
-    edges = findEdges(image)
+    edges = findEdges(image, m.edge_min, m.edge_max, m.edge_aperture)
     edge_pixel_cnt = int(len(edges))
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
