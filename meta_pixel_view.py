@@ -80,11 +80,11 @@ def findClusters(points, eps, min_samples):
 
 # Example usage
 # image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-# opaque_pixels = findOpaquePixels(image)
-# clusters = findClusters(image, opaque_pixels)
+# edges = findEdges(image)
+# clusters = findClusters(image, edges)
 # print(clusters)
 
-def findOpaquePixels(image):
+def findEdges(image):
 
     mask_array = np.array(image)
 
@@ -94,9 +94,9 @@ def findOpaquePixels(image):
     # Apply Canny edge detection
     edges = cv2.Canny(gray_mask, 100, 200)
 
-    # Iterate through the edges to find non-transparent pixels
-    opaque_pixels = np.argwhere(edges != 0)
-    return opaque_pixels
+    # Iterate through the edges to find edge pixels
+    edges = np.argwhere(edges != 0)
+    return edges
 
 def meta_pixel(m, pdf_canvas):
 
@@ -117,11 +117,9 @@ def meta_pixel(m, pdf_canvas):
     max_dx = image.width * m.max_dx_percentage
     max_dy = image.height * m.max_dy_percentage
 
-    im = make_transparent(image, m.transparent_threshold)
-    opaque_pixels = findOpaquePixels(image)
-
-    edge_pixel_cnt = int(len(opaque_pixels))
-    edge_increment = int((edge_pixel_cnt) / m.shapes)
+    edges = findEdges(image)
+    edge_pixel_cnt = int(len(edges))
+    edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, m.max_layers):
       print("layer", _)
@@ -135,7 +133,7 @@ def meta_pixel(m, pdf_canvas):
         for shape_layer in range(1, m.max_shape_layers):
           width, height = bounding_box_size(max_width, max_height, min_width, min_height)
 
-          sy, sx = opaque_pixels[i] - (height // 2, width // 2)
+          sy, sx = edges[i] - (height // 2, width // 2)
 
           if sy < 0 or sx < 0:
             continue
@@ -170,8 +168,9 @@ def meta_pixel(m, pdf_canvas):
         filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
         overlay.save(filename)
 
-    clusters = findClusters(opaque_pixels, min_samples=m.min_samples, eps=m.eps)
-    image = visualizeClusters(image, clusters)
+    if len(edges) > 0:
+      clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
+      image = visualizeClusters(image, clusters)
           
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
