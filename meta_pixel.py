@@ -143,9 +143,23 @@ class Controller(tk.Tk):
         self.init_input_file()
         self.init_output_file()
 
-        button_generate = tk.Button(self.content_frame, text="Generate Meta Pixel",
+        # Create a frame for actions with 1 row and 2 columns
+        self.action_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=20)
+        self.action_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        self.action_frame.grid_columnconfigure(0, weight=1)
+        self.action_frame.grid_columnconfigure(1, weight=1)
+
+        button_generate = tk.Button(self.action_frame, text="Generate",
                         command=lambda: do_meta_pixel(self.model))
-        button_generate.grid(row=0, column=0, padx=10, pady=10)
+        button_generate.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+        button_exit = tk.Button(self.action_frame, text="Exit",
+                    command=lambda: exit())
+        button_exit.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+
+
+
         
         '''
 
