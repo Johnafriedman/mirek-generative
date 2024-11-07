@@ -159,14 +159,15 @@ def make_transparent(image, luminance_threshold, above=True):
   return transparent_image
 
 def random_color(name_space, name):
-  minr = name_space[f"min_{name}_red"]
-  maxr = name_space[f"max_{name}_red"]
-  ming = name_space[f"min_{name}_green"]
-  maxg = name_space[f"max_{name}_green"]
-  minb = name_space[f"min_{name}_blue"]
-  maxb = name_space[f"max_{name}_blue"]
-  mina = name_space[f"min_{name}_alpha"]
-  maxa = name_space[f"max_{name}_alpha"]
+  c = name_space[f"{name}_color"]  
+  minr = min(c[0][0], c[1][0])
+  maxr = max(c[0][0], c[1][0])
+  ming = min(c[0][1], c[1][1])
+  maxg = max(c[0][1], c[1][1])
+  minb = min(c[0][2], c[1][2])
+  maxb = max(c[0][2], c[1][2])
+  mina = min(c[0][3], c[1][3])
+  maxa = max(c[0][3], c[1][3])
 
   return (
     int(random.uniform(minr, maxr)),
