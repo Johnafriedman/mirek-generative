@@ -4,6 +4,8 @@ from tkinter import filedialog
 import os, datetime
 from constants import GOLDEN_RATIO
 
+from meta_pixel_view import do_meta_pixel
+
 
 # Model
 class Model:
@@ -234,10 +236,10 @@ class Controller(tk.Tk):
 
     def init_shapes_width_height(self):
         def set_min_width(value):
-            self.model.min_width_percentage = value
+            self.model.min_width_percentage = float(value)
 
         def set_max_width(value):
-            self.model.max_width_percentage = value
+            self.model.max_width_percentage = float(value)
 
         # Label for width
         self.label_width = tk.Label(self.shapes_sub_frame1, text="Width: min/max")
@@ -254,10 +256,10 @@ class Controller(tk.Tk):
         self.scale_max_width_percentage.set(self.model.max_width_percentage)        
         
         def set_min_height(value):
-            self.model.min_height_percentage = value
+            self.model.min_height_percentage = float(value)
 
         def set_max_height(value):
-            self.model.max_height_percentage = value
+            self.model.max_height_percentage = float(value)
 
         # Label for height
         self.label_height = tk.Label(self.shapes_sub_frame1, text="Height: min/max")
@@ -275,10 +277,10 @@ class Controller(tk.Tk):
 
     def init_shapes_dx_dy(self):
         def set_min_dx(value):
-            self.model.min_dx_percentage = value
+            self.model.min_dx_percentage = float(value)
 
         def set_max_dx(value):
-            self.model.max_dx_percentage = value
+            self.model.max_dx_percentage = float(value)
 
         # Label for dx
         self.label_dx = tk.Label(self.shapes_sub_frame1, text="Dx: min/max")
@@ -295,10 +297,10 @@ class Controller(tk.Tk):
         self.scale_max_dx_percentage.set(self.model.max_dx_percentage)        
         
         def set_min_dy(value):
-            self.model.min_dy_percentage = value
+            self.model.min_dy_percentage = float(value)
 
         def set_max_dy(value):
-            self.model.max_dy_percentage = value
+            self.model.max_dy_percentage = float(value)
 
         # Label for dy
         self.label_dy = tk.Label(self.shapes_sub_frame1, text="Dy: min/max")
@@ -356,7 +358,7 @@ class Controller(tk.Tk):
         self.label_prob_do_transform.grid(row=4, column=0, padx=10, pady=0, sticky="w")
 
         def set_prob_do_transform(value):
-            self.model.prob_do_transform = value
+            self.model.prob_do_transform = float(value)
             
         # Scale for prob_do_transform
         self.scale_prob_do_transform = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_prob_do_transform)
@@ -478,7 +480,7 @@ class Controller(tk.Tk):
 
     def generate(self):
         # Functionality to generate meta pixel
-        print("Generating Meta Pixel with output directory:", self.model.output_dir)
+        do_meta_pixel(self.model)
 
     def exit(self):
         # Functionality to exit the application
