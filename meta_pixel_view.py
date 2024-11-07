@@ -157,7 +157,7 @@ def meta_pixel(m, pdf_canvas):
               outline=random_color(vars(m), "outline"),
               outline_width=2,
               radius=5,
-              transforms=["scale", "blur"]
+              transforms=["scale", "blur", "invert"]
           )
 
           image.paste(out, (dx, dy), mask)
@@ -192,8 +192,9 @@ def do_meta_pixel(m):
   # Open a PDF for writing
     m.pdf_path = f"{m.output_dir}/{m.image_name}.pdf"
     pdf_canvas = canvas.Canvas(m.pdf_path)
-    
     m.input_image_path = f"{m.input_dir}/{m.image_name}{m.image_ext}"
+  else:
+    pdf_canvas = None
 
   # Call the metaPixel function
   meta_pixel(m, pdf_canvas)
