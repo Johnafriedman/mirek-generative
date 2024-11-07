@@ -123,9 +123,18 @@ class Controller(tk.Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame.grid_rowconfigure(1, weight=1)
+        self.content_frame.grid_rowconfigure(2, weight=1)
+        self.content_frame.grid_rowconfigure(3, weight=1)
         self.content_frame.grid_columnconfigure(0, weight=1)
 
-        # Create a frame for files with 6 rows and 5 columns
+        self.init_file_frame()
+        self.init_shapes_frame()
+        self.init_color_frame()
+        self.init_action_frame()
+
+    def init_file_frame(self):
+        # Create a frame for files with 3 rows and 5 columns
         self.file_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=100)
         self.file_frame.grid(row=0, column=0, padx=10, sticky="nsew")
 
@@ -142,7 +151,38 @@ class Controller(tk.Tk):
         # Initialize the files frame
         self.init_input_file()
         self.init_output_file()
+        self.init_output_options()
 
+    def init_output_options(self):
+
+        self.output_options_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=100)
+        self.output_options_frame.grid(row=0, column=0, padx=10, sticky="ew")
+
+        # Label for files
+        self.label_files = tk.Label(self.output_options_frame, text="Files")
+        self.label_files.grid(row=0, column=0, padx=10, pady=0, sticky="w")
+
+        # Entry for files
+        self.entry_files = tk.Entry(self.output_options_frame)
+        self.entry_files.grid(row=0, column=1, padx=10, pady=0, sticky="ew")
+        self.entry_files.insert(0, self.model.files)
+
+        # Checkbutton for create_pdf
+        self.var_create_pdf = tk.BooleanVar(value=self.model.create_pdf)
+        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf)
+        self.check_create_pdf.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for show_pdf
+        self.var_show_pdf = tk.BooleanVar(value=self.model.show_pdf)
+        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf)
+        self.check_show_pdf.grid(row=0, column=3, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for show_image
+        self.var_show_image = tk.BooleanVar(value=self.model.show_image)
+        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image)
+        self.check_show_image.grid(row=0, column=4, padx=10, pady=0, sticky="w")
+
+    def init_action_frame(self):    
         # Create a frame for actions with 1 row and 2 columns
         self.action_frame = tk.Frame(self.content_frame, relief="ridge", width=200, height=20)
         self.action_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -158,9 +198,6 @@ class Controller(tk.Tk):
                     command=lambda: exit())
         button_exit.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
-
-
-        
         '''
 
         # Create a frame for the generate button
