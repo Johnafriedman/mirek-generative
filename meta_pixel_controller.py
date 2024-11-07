@@ -189,6 +189,19 @@ class Controller(tk.Tk):
         self.output_options_frame.grid(row=3, column=0, padx=10, sticky="nsew")
         self.init_output_options()
 
+    def update_output_options(self):
+        self.model.files = int(self.entry_files.get())
+        self.model.create_pdf = self.var_create_pdf.get()
+        if self.model.create_pdf:
+            self.model.show_pdf = self.var_show_pdf.get()
+            self.check_show_pdf.config(state="normal")    
+        else:
+            self.model.show_pdf = False
+            self.check_show_pdf.deselect()
+            #disable the show_pdf checkbutton
+            self.check_show_pdf.config(state="disabled")    
+        self.model.show_image = self.var_show_image.get()
+
     def init_output_options(self):
 
         # Label for files
@@ -202,17 +215,17 @@ class Controller(tk.Tk):
 
         # Checkbutton for create_pdf
         self.var_create_pdf = tk.BooleanVar(value=self.model.create_pdf)
-        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf)
+        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf, command=self.update_output_options)
         self.check_create_pdf.grid(row=0, column=2, padx=10, pady=0, sticky="w")
 
         # Checkbutton for show_pdf
         self.var_show_pdf = tk.BooleanVar(value=self.model.show_pdf)
-        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf)
+        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf, command=self.update_output_options)
         self.check_show_pdf.grid(row=0, column=3, padx=10, pady=0, sticky="w")
 
         # Checkbutton for show_image
         self.var_show_image = tk.BooleanVar(value=self.model.show_image)
-        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image)
+        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image, command=self.update_output_options)
         self.check_show_image.grid(row=0, column=4, padx=10, pady=0, sticky="w")
 
     def init_shapes_frame(self):
@@ -475,12 +488,14 @@ class Controller(tk.Tk):
         button_exit = tk.Button(self.action_frame, text="Exit", command=self.exit)
         button_exit.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
-        button_generate = tk.Button(self.action_frame, text="Generate", command=self.generate)
-        button_generate.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+        self.button_generate = tk.Button(self.action_frame, text="Generate", command=self.generate)
+        self.button_generate.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
     def generate(self):
         # Functionality to generate meta pixel
+        self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
+        self.button_generate.config(state="normal")
 
     def exit(self):
         # Functionality to exit the application
