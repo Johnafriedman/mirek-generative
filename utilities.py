@@ -164,7 +164,7 @@ def random_color(name_space, name):
   color1, color2 = c
   random_factor = random.random()
   random_color = tuple(
-      int(color1[i] + (color2[i] - color1[i]) * random_factor) for i in range(3)
+      int(color1[i] + (color2[i] - color1[i]) * random_factor) for i in range(4)
   )
   return random_color
   
