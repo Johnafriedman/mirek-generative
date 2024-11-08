@@ -58,6 +58,8 @@ def do_mesh(m):
           dy = sy
 
         width, height = bounding_box_size(m.max_width, m.max_height, m.min_width, m.min_height)
+        fill = random_color(vars(m), "fill") if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
+
 
         (out, mask) = transformed_shape(
                   image=image,
@@ -65,7 +67,7 @@ def do_mesh(m):
                   y=sy,
                   width=width,
                   height=height,
-                  fill=random_color(vars(m),"fill"),
+                  fill=fill,
                   outline=random_color(vars(m),"outline"),
                   outline_width=2
               )
@@ -87,37 +89,25 @@ if __name__ == '__main__':
         self.max_mesh_width = 4
         self.max_mesh_height = 6
         self.max_layers = 5
-        self.files = 4
+        self.files = 1
         self.shapes = 10
         self.radius = 5
         self.prob_do_transform = .9
         self.prob_shape_destination_equals_source = .5
         self.transparent_threshold = 128
-        self.transparent_above = True
+        self.transparent_above = False
 
-        self.max_fill_alpha = 255
-        self.min_fill_alpha = 0
-        self.max_fill_red = 255
-        self.min_fill_red = 0
-        self.max_fill_green = 255
-        self.min_fill_green = 0
-        self.max_fill_blue = 255
-        self.min_fill_blue = 0
+        self.fill_color = [(255,255,64,128),(192,128,32,32)]
+        self.accent_color = [(255,16,16,212),(192,192,0,192)]
+        self.outline_color = [(255,255,255,255),(128,0,0,0)]
+        self.accent_color_percentage = .02
 
-        self.max_outline_alpha = 255
-        self.min_outline_alpha = 0
-        self.max_outline_red = 255
-        self.min_outline_red = 0
-        self.max_outline_green = 255
-        self.min_outline_green = 0
-        self.max_outline_blue = 255
-        self.min_outline_blue = 0
         self.source_folder = 'input/'
         if test_mesh:
           self.image_path = 'grid_image.png'
         else:
-          self.image_name = 'meta-existance'
-          self.image_ext = '.png'
+          self.image_name = 'lightwater'
+          self.image_ext = '.jpg'
           self.image_path = f'{self.image_name}{self.image_ext}'
           self.image_date = datetime.datetime.now().strftime("%Y%m%d")
 
