@@ -18,10 +18,13 @@ class Model:
         self.max_shape_layers = 2
         self.shapes = 2**7
         self.save_layer_images = False
-
         self.files = 1
-        self.radius = 5
-        self.prob_do_transform = 1
+
+        self.do_blur = True
+        self.blur_radius = 5
+        self.do_scale = True
+        self.scale_factor = 8
+        self.do_invert = True
         self.prob_shape_destination_equals_source = 1
         self.transparent_threshold = 128
         self.transparent_above_threshold = True
@@ -255,16 +258,16 @@ class Controller(tk.Tk):
             self.model.max_width_percentage = float(value)
 
         # Label for width
-        self.label_width = tk.Label(self.shapes_sub_frame1, text="Width: min/max")
+        self.label_width = tk.Label(self.shapes_sub_frame2, text="Width: min/max")
         self.label_width.grid(row=0, column=2, padx=10, pady=0, sticky="w")
 
         # Scale for min_width_percentage
-        self.scale_min_width_percentage = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_width)
+        self.scale_min_width_percentage = tk.Scale(self.shapes_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_width)
         self.scale_min_width_percentage.grid(row=0, column=3, padx=10, pady=0, sticky="ew")
         self.scale_min_width_percentage.set(self.model.min_width_percentage)
 
         # Scale for max_width_percentage
-        self.scale_max_width_percentage = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_width)
+        self.scale_max_width_percentage = tk.Scale(self.shapes_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_width)
         self.scale_max_width_percentage.grid(row=0, column=4, padx=10, pady=0, sticky="ew")
         self.scale_max_width_percentage.set(self.model.max_width_percentage)        
         
@@ -275,16 +278,16 @@ class Controller(tk.Tk):
             self.model.max_height_percentage = float(value)
 
         # Label for height
-        self.label_height = tk.Label(self.shapes_sub_frame1, text="Height: min/max")
+        self.label_height = tk.Label(self.shapes_sub_frame2, text="Height: min/max")
         self.label_height.grid(row=1, column=2, padx=10, pady=0, sticky="w")
 
         # Scale for min_height_percentage
-        self.scale_min_height_percentage = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_height)
+        self.scale_min_height_percentage = tk.Scale(self.shapes_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_height)
         self.scale_min_height_percentage.grid(row=1, column=3, padx=10, pady=0, sticky="ew")
         self.scale_min_height_percentage.set(self.model.min_height_percentage)
 
         # Scale for max_height_percentage
-        self.scale_max_height_percentage = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_height)
+        self.scale_max_height_percentage = tk.Scale(self.shapes_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_height)
         self.scale_max_height_percentage.grid(row=1, column=4, padx=10, pady=0, sticky="ew")
         self.scale_max_height_percentage.set(self.model.max_height_percentage)
 
@@ -296,16 +299,16 @@ class Controller(tk.Tk):
             self.model.max_dx_percentage = float(value)
 
         # Label for dx
-        self.label_dx = tk.Label(self.shapes_sub_frame1, text="Dx: min/max")
+        self.label_dx = tk.Label(self.shapes_sub_frame2, text="Dx: min/max")
         self.label_dx.grid(row=2, column=2, padx=10, pady=0, sticky="w")
 
         # Scale for min_dx_percentage
-        self.scale_min_dx_percentage = tk.Scale(self.shapes_sub_frame1, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_dx)
+        self.scale_min_dx_percentage = tk.Scale(self.shapes_sub_frame2, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_dx)
         self.scale_min_dx_percentage.grid(row=2, column=3, padx=10, pady=0, sticky="ew")
         self.scale_min_dx_percentage.set(self.model.min_dx_percentage)
 
         # Scale for max_dx_percentage
-        self.scale_max_dx_percentage = tk.Scale(self.shapes_sub_frame1, from_=-.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_dx)
+        self.scale_max_dx_percentage = tk.Scale(self.shapes_sub_frame2, from_=-.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_dx)
         self.scale_max_dx_percentage.grid(row=2, column=4, padx=10, pady=0, sticky="ew")
         self.scale_max_dx_percentage.set(self.model.max_dx_percentage)        
         
@@ -316,18 +319,28 @@ class Controller(tk.Tk):
             self.model.max_dy_percentage = float(value)
 
         # Label for dy
-        self.label_dy = tk.Label(self.shapes_sub_frame1, text="Dy: min/max")
+        self.label_dy = tk.Label(self.shapes_sub_frame2, text="Dy: min/max")
         self.label_dy.grid(row=3, column=2, padx=10, pady=0, sticky="w")
 
         # Scale for min_dy_percentage
-        self.scale_min_dy_percentage = tk.Scale(self.shapes_sub_frame1, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_dy)
+        self.scale_min_dy_percentage = tk.Scale(self.shapes_sub_frame2, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_min_dy)
         self.scale_min_dy_percentage.grid(row=3, column=3, padx=10, pady=0, sticky="ew")
         self.scale_min_dy_percentage.set(self.model.min_dy_percentage)
 
         # Scale for max_dy_percentage
-        self.scale_max_dy_percentage = tk.Scale(self.shapes_sub_frame1, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_dy)
+        self.scale_max_dy_percentage = tk.Scale(self.shapes_sub_frame2, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_dy)
         self.scale_max_dy_percentage.grid(row=3, column=4, padx=10, pady=0, sticky="ew")
         self.scale_max_dy_percentage.set(self.model.max_dy_percentage)
+
+    def update_shapes_options(self):
+        self.model.shapes = int(self.entry_shapes.get())
+        self.model.max_layers = int(self.entry_max_layers.get())
+        self.model.max_shape_layers = int(self.entry_max_shape_layers.get())
+        self.model.do_blur = self.var_do_blur.get()
+        self.model.blur_radius = int(self.entry_blur_radius.get())
+        self.model.do_scale = self.var_do_scale.get()
+        self.model.scale_factor = int(self.entry_scale_factor.get())
+        self.model.do_invert = self.var_do_invert.get()
 
     def init_shapes_widgets(self):
         # Label for shapes
@@ -357,26 +370,30 @@ class Controller(tk.Tk):
         self.entry_max_shape_layers.grid(row=2, column=1, padx=0, pady=0, sticky="ew")
         self.entry_max_shape_layers.insert(0, self.model.max_shape_layers)
 
-        # Label for radius
-        self.label_radius = tk.Label(self.shapes_sub_frame1, text="Radius")
-        self.label_radius.grid(row=3, column=0, padx=10, pady=0, sticky="w")
+        # Checkbutton for do_blur
+        self.var_do_blur = tk.BooleanVar(value=self.model.do_blur)
+        self.check_do_blur = tk.Checkbutton(self.shapes_sub_frame1, text="Blur Radius", variable=self.var_do_blur)
+        self.check_do_blur.grid(row=3, column=0, padx=10, pady=0, sticky="w")
 
         # Entry for radius
-        self.entry_radius = tk.Entry(self.shapes_sub_frame1)
-        self.entry_radius.grid(row=3, column=1, padx=0, pady=0, sticky="ew")
-        self.entry_radius.insert(0, self.model.radius)
+        self.entry_blur_radius = tk.Entry(self.shapes_sub_frame1)
+        self.entry_blur_radius.grid(row=3, column=1, padx=0, pady=0, sticky="ew")
+        self.entry_blur_radius.insert(0, self.model.blur_radius)
 
-        # Label for prob_do_transform
-        self.label_prob_do_transform = tk.Label(self.shapes_sub_frame1, text="Prob Do Transform")
-        self.label_prob_do_transform.grid(row=4, column=0, padx=10, pady=0, sticky="w")
+        # Checkbutton for scale
+        self.var_do_scale = tk.BooleanVar(value=self.model.do_scale)
+        self.check_do_scale = tk.Checkbutton(self.shapes_sub_frame1, text="Scale", variable=self.var_do_scale)
+        self.check_do_scale.grid(row=4, column=0, padx=10, pady=0, sticky="w")
 
-        def set_prob_do_transform(value):
-            self.model.prob_do_transform = float(value)
-            
-        # Scale for prob_do_transform
-        self.scale_prob_do_transform = tk.Scale(self.shapes_sub_frame1, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_prob_do_transform)
-        self.scale_prob_do_transform.grid(row=4, column=1, padx=0, pady=0, sticky="ew")
-        self.scale_prob_do_transform.set(self.model.prob_do_transform)
+        # Entry for scale
+        self.entry_scale_factor = tk.Entry(self.shapes_sub_frame1)
+        self.entry_scale_factor.grid(row=4, column=1, padx=0, pady=0, sticky="ew")
+        self.entry_scale_factor.insert(0, self.model.scale_factor)
+
+        # Checkbutton for invert
+        self.var_do_invert = tk.BooleanVar(value=self.model.do_invert)
+        self.check_do_invert = tk.Checkbutton(self.shapes_sub_frame1, text="Invert", variable=self.var_do_invert)
+        self.check_do_invert.grid(row=5, column=0, padx=10, pady=0, sticky="w")
 
         self.init_shapes_width_height()
         self.init_shapes_dx_dy()
@@ -492,6 +509,8 @@ class Controller(tk.Tk):
         self.button_generate.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
     def generate(self):
+        self.update_output_options()
+        self.update_shapes_options()
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)

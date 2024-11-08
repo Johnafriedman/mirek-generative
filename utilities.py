@@ -8,7 +8,7 @@ from PIL.ImageOps import scale
 from constants import GOLDEN_RATIO
 
 
-def transformed_shape(image, x, y, width, height, fill, outline, outline_width, radius = 5, transforms = ["blur", "invert", "scale"], shapes=["ellipse","rectangle"],do_transform=True):
+def transformed_shape(image, x, y, width, height, fill, outline, outline_width, transforms = [], shapes=["ellipse","rectangle"],do_transform=True):
 
   
   shape = shapes[int(random.uniform(0,len(shapes)))]
@@ -33,19 +33,18 @@ def transformed_shape(image, x, y, width, height, fill, outline, outline_width, 
   # Apply the mask to the image  
   cropped = image.crop((x,y,x+width,y+height))
 
-  if not do_transform:
-    transformed_image = cropped
-  else:
-    if transform == 'blur':
-      transformed_image = cropped.filter(ImageFilter.GaussianBlur(radius))
-    elif transform == 'invert':
-      red, green, blue, alpha = cropped.split()
-      transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
-    elif transform == "scale":
-      scale_factor =  int(random.uniform(2, 4))
-      scaled = scale(cropped, scale_factor, Image.NEAREST)
-      transformed_image = scaled.crop((0,0,width,height))
 
+  if transform['name'] == 'blur':
+    transformed_image = cropped.filter(ImageFilter.GaussianBlur(transform['radius']))
+  elif transform['name'] == 'invert':
+    red, green, blue, alpha = cropped.split()
+    transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
+  elif transform['name'] == "scale":
+    scale_factor =  int(random.uniform(2, transform['scale_factor']))
+    scaled = scale(cropped, scale_factor, Image.NEAREST)
+    transformed_image = scaled.crop((0,0,width,height))
+  else:
+    transformed_image = cropped
 
 
   overlay = Image.new('RGBA', cropped.size, (0,0,0,0))

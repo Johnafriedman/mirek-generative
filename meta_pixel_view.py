@@ -147,6 +147,11 @@ def meta_pixel(m, pdf_canvas):
 
           fill = random_color(vars(m), "fill") if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
 
+          transforms = []
+          if m.do_scale: transforms.append({"name":"scale", "scale_factor": m.scale_factor})
+          if m.do_blur: transforms.append({"name":"blur", "radius": m.blur_radius})
+          if m.do_invert: transforms.append({"name":"invert"})  
+
           (out, mask) = transformed_shape(
               image=image,
               x=sx,
@@ -156,8 +161,7 @@ def meta_pixel(m, pdf_canvas):
               fill=fill,
               outline=random_color(vars(m), "outline"),
               outline_width=2,
-              radius=5,
-              transforms=["scale", "blur", "invert"]
+              transforms=transforms
           )
 
           image.paste(out, (dx, dy), mask)
