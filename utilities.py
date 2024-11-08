@@ -159,20 +159,13 @@ def make_transparent(image, luminance_threshold, above=True):
   return transparent_image
 
 def random_color(name_space, name):
-  c = name_space[f"{name}_color"]  
-  minr = min(c[0][0], c[1][0])
-  maxr = max(c[0][0], c[1][0])
-  ming = min(c[0][1], c[1][1])
-  maxg = max(c[0][1], c[1][1])
-  minb = min(c[0][2], c[1][2])
-  maxb = max(c[0][2], c[1][2])
-  mina = min(c[0][3], c[1][3])
-  maxa = max(c[0][3], c[1][3])
-
-  return (
-    int(random.uniform(minr, maxr)),
-    int(random.uniform(ming, maxg)), 
-    int(random.uniform(minb, maxb)), 
-    int(random.uniform(mina, maxa))
+  c = name_space[f"{name}_color"]
+  # gven two colors return a random color from a gradient between them
+  color1, color2 = c
+  random_factor = random.random()
+  random_color = tuple(
+      int(color1[i] + (color2[i] - color1[i]) * random_factor) for i in range(3)
   )
+  return random_color
+  
 
