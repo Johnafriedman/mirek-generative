@@ -318,6 +318,9 @@ class Controller(tk.Tk):
         def set_max_dy(value):
             self.model.max_dy_percentage = float(value)
 
+        def set_dx_dy_eq_sx_sy(value):
+            self.model.prob_shape_destination_equals_source = float(value)
+
         # Label for dy
         self.label_dy = tk.Label(self.shapes_sub_frame2, text="Dy: min/max")
         self.label_dy.grid(row=3, column=2, padx=10, pady=0, sticky="w")
@@ -331,6 +334,16 @@ class Controller(tk.Tk):
         self.scale_max_dy_percentage = tk.Scale(self.shapes_sub_frame2, from_= -.10, to=1.0, resolution=0.01, orient=tk.HORIZONTAL, command=set_max_dy)
         self.scale_max_dy_percentage.grid(row=3, column=4, padx=10, pady=0, sticky="ew")
         self.scale_max_dy_percentage.set(self.model.max_dy_percentage)
+
+        # Label for prob dx,dy = sx,sy
+        self.label_dx_dy_eq_sx_sy = tk.Label(self.shapes_sub_frame2, text="prob dest == src")
+        self.label_dx_dy_eq_sx_sy.grid(row=4, column=2, padx=10, pady=0, sticky="w")
+
+        # Scale for min_dy_percentage
+        self.scale_dx_dy_eq_sx_sy = tk.Scale(self.shapes_sub_frame2, from_= 0.0, to=1.0, resolution=0.1, orient=tk.HORIZONTAL, command=set_dx_dy_eq_sx_sy)
+        self.scale_dx_dy_eq_sx_sy.grid(row=4, column=3, padx=10, pady=0, sticky="ew")
+        self.scale_dx_dy_eq_sx_sy.set(self.model.prob_shape_destination_equals_source)
+
 
     def update_shapes_options(self):
         self.model.shapes = int(self.entry_shapes.get())
