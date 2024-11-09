@@ -178,9 +178,10 @@ def meta_pixel(m, pdf_canvas):
           
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
-    image.save(filename)
-    if m.show_image:
-      image.show(filename)
+    m.image = image
+    # image.save(filename)
+    # if m.show_image:
+    #   image.show(filename)
 
     if m.create_pdf:
       # Add a new page to the PDF with the same size as the image
