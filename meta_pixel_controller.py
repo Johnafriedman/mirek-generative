@@ -70,7 +70,7 @@ class Controller(tk.Tk):
         tk.Tk.__init__(self)
         self.model = model
         self.title("Meta Pixel")
-        self.geometry("800x600")
+        self.geometry("1024x800")
 
         # Create the main content frame
         self.content_frame = tk.Frame(self, bg="lightgrey")
@@ -79,17 +79,16 @@ class Controller(tk.Tk):
         # Configure grid weights to make the layout responsive
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
-        """         self.content_frame.grid_rowconfigure(0, weight=1)
-        self.content_frame.grid_rowconfigure(1, weight=1)
-        self.content_frame.grid_rowconfigure(2, weight=1)
-        self.content_frame.grid_rowconfigure(3, weight=1)
-        self.content_frame.grid_columnconfigure(0, weight=1) """
 
         self.init_file_frame()
         self.init_output_options_frame()
         self.init_shapes_frame()
+        self.init_analysis_frame()
         self.init_color_frame()
         self.init_action_frame()
+
+        self.update_idletasks()
+        self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{self.winfo_x()}+{self.winfo_y()}")
 
     def init_file_frame(self):
         # Create a frame for files
@@ -412,11 +411,86 @@ class Controller(tk.Tk):
 
         self.init_shapes_width_height()
         self.init_shapes_dx_dy()
+
+    def init_analysis_frame(self):
+        # Create a frame for analysis
+        self.analysis_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
+        self.analysis_frame.grid(row=6, column=0, padx=10, pady=10, sticky="nsew")
+
+        # Configure grid weights for the analysis frame
+        for i in range(5):
+            self.analysis_frame.grid_rowconfigure(i, weight=1)
+        self.analysis_frame.grid_columnconfigure(0, weight=1)
+        self.analysis_frame.grid_columnconfigure(1, weight=1)
+
+        # Add sub-frames within the analysis frame
+        self.analysis_sub_frame1 = tk.Frame(self.analysis_frame, relief="ridge", bg="lightyellow")
+        self.analysis_sub_frame1.grid(row=0, column=0, rowspan=5, padx=5, pady=5, sticky="nsew")
+
+        self.analysis_sub_frame2 = tk.Frame(self.analysis_frame, relief="ridge", bg="lightpink")
+        self.analysis_sub_frame2.grid(row=0, column=1, rowspan=5, padx=5, pady=5, sticky="nsew")
+
+        self.init_analysis_widgets()
        
+    def init_analysis_widgets(self):
+        # Label for edge detection
+        self.label_edge_detection = tk.Label(self.analysis_sub_frame1, text="Edge Detection")   
+        self.label_edge_detection.grid(row=0, column=0, padx=10, pady=0, sticky="w")    
+
+        # Label for edge_min
+        self.label_edge_min = tk.Label(self.analysis_sub_frame1, text="Edge Min")   
+        self.label_edge_min.grid(row=1, column=0, padx=10, pady=0, sticky="w")  
+
+        # Entry for edge_min
+        self.entry_edge_min = tk.Entry(self.analysis_sub_frame1)    
+        self.entry_edge_min.grid(row=1, column=1, padx=0, pady=0, sticky="ew")  
+        self.entry_edge_min.insert(0, self.model.edge_min)
+
+        # Label for edge_max
+        self.label_edge_max = tk.Label(self.analysis_sub_frame1, text="Edge Max")   
+        self.label_edge_max.grid(row=2, column=0, padx=10, pady=0, sticky="w")  
+
+        # Entry for edge_max
+        self.entry_edge_max = tk.Entry(self.analysis_sub_frame1)    
+        self.entry_edge_max.grid(row=2, column=1, padx=0, pady=0, sticky="ew")  
+        self.entry_edge_max.insert(0, self.model.edge_max)
+
+        # Label for edge_aperture
+        self.label_edge_aperture = tk.Label(self.analysis_sub_frame1, text="Edge Aperture") 
+        self.label_edge_aperture.grid(row=3, column=0, padx=10, pady=0, sticky="w") 
+        
+        # Entry for edge_aperture
+        self.entry_edge_aperture = tk.Entry(self.analysis_sub_frame1)   
+        self.entry_edge_aperture.grid(row=3, column=1, padx=0, pady=0, sticky="ew") 
+        self.entry_edge_aperture.insert(0, self.model.edge_aperture)    
+
+        # Label for clustering
+        self.label_clustering = tk.Label(self.analysis_sub_frame2, text="Clustering") 
+        self.label_clustering.grid(row=0, column=0, padx=10, pady=0, sticky="w")    
+
+        # Label for eps
+        self.label_eps = tk.Label(self.analysis_sub_frame2, text="Eps") 
+        self.label_eps.grid(row=1, column=0, padx=10, pady=0, sticky="w")   
+
+        # Entry for eps
+        self.entry_eps = tk.Entry(self.analysis_sub_frame2)
+        self.entry_eps.grid(row=1, column=1, padx=0, pady=0, sticky="ew")   
+        self.entry_eps.insert(0, self.model.eps)
+
+        # Label for min_samples
+        self.label_min_samples = tk.Label(self.analysis_sub_frame2, text="Min Samples") 
+        self.label_min_samples.grid(row=2, column=0, padx=10, pady=0, sticky="w")   
+
+        # Entry for min_samples
+        self.entry_min_samples = tk.Entry(self.analysis_sub_frame2) 
+        self.entry_min_samples.grid(row=2, column=1, padx=0, pady=0, sticky="ew")   
+        self.entry_min_samples.insert(0, self.model.min_samples)    
+        
+          
     def init_color_frame(self):
         # Create a frame for colors
         self.color_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.color_frame.grid(row=6, column=0, padx=10, pady=10, sticky="nsew")
+        self.color_frame.grid(row=7, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the color frame
         for i in range(5):
