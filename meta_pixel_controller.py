@@ -412,6 +412,13 @@ class Controller(tk.Tk):
         self.init_shapes_width_height()
         self.init_shapes_dx_dy()
 
+    def update_analysis_options(self):
+        self.model.edge_min = int(self.entry_edge_min.get())
+        self.model.edge_max = int(self.entry_edge_max.get())
+        self.model.edge_aperture = int(self.entry_edge_aperture.get())
+        self.model.eps = int(self.entry_eps.get())
+        self.model.min_samples = int(self.entry_min_samples.get())
+
     def init_analysis_frame(self):
         # Create a frame for analysis
         self.analysis_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
@@ -600,6 +607,8 @@ class Controller(tk.Tk):
     def generate(self):
         self.update_output_options()
         self.update_shapes_options()
+        self.update_analysis_options()
+        
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
