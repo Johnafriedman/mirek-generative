@@ -7,6 +7,75 @@ from constants import GOLDEN_RATIO
 
 from meta_pixel_view import do_meta_pixel
 
+class ImageWindow:
+    def __init__(self, parent, image):
+        self.parent = parent
+        self.image_copy = image.copy()
+        self.scale_update_id = None
+
+    def open(self):
+        new_window = tk.Toplevel(self.parent)
+        new_window.title(f"Image Window - {self.parent.model.image_name}")  
+
+        # Create a frame for the canvas and scrollbars
+        frame = tk.Frame(new_window)
+        frame.grid(row=0, column=0, sticky="nsew")
+
+        # Create a canvas widget
+        self.canvas = tk.Canvas(frame)
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+
+        # Add scrollbars to the canvas
+        h_scrollbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL, command=self.canvas.xview)
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+        v_scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=self.canvas.yview)
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.canvas.config(xscrollcommand=h_scrollbar.set, yscrollcommand=v_scrollbar.set)
+
+        # Create a copy of the image to scale
+        self.tk_image = ImageTk.PhotoImage(self.image_copy)
+        self.image_id = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
+
+        # Configure the scroll region
+        self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
+
+        # Add a scale widget to adjust the size of the image
+        self.scale = tk.Scale(new_window, from_=10, to=200, orient=tk.HORIZONTAL, label="Scale", command=self.on_scale)
+        self.scale.set(100)
+        self.scale.grid(row=1, column=0, sticky="ew")
+
+        # Bind mouse wheel events for zooming
+        new_window.bind("<MouseWheel>", self.zoom)  # For Windows and macOS
+        new_window.bind("<Button-4>", self.zoom)  # For Linux
+        new_window.bind("<Button-5>", self.zoom)  # For Linux
+
+        # Configure grid weights for the new window and frame
+        new_window.grid_rowconfigure(0, weight=1)
+        new_window.grid_rowconfigure(1, weight=0)
+        new_window.grid_columnconfigure(0, weight=1)
+
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+
+    def on_scale(self, scale_value):
+        if self.scale_update_id is not None:
+            self.parent.after_cancel(self.scale_update_id)
+        self.scale_update_id = self.parent.after(500, lambda: self.scale_image(scale_value))
+
+    def scale_image(self, scale_value):
+        scale_value = int(scale_value)
+        new_size = (self.image_copy.width * scale_value // 100, self.image_copy.height * scale_value // 100)
+        resized_image = self.image_copy.resize(new_size, Image.LANCZOS)
+        self.tk_image = ImageTk.PhotoImage(resized_image)
+        self.canvas.itemconfig(self.image_id, image=self.tk_image)
+        self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
+
+    def zoom(self, event):
+        if event.delta > 0 or event.num == 4:
+            self.scale.set(self.scale.get() + 10)
+        elif event.delta < 0 or event.num == 5:
+            self.scale.set(self.scale.get() - 10)
+        self.on_scale(self.scale.get())
 
 # Model
 class Model:
@@ -64,6 +133,7 @@ class Model:
         self.input_path = f"{self.input_dir}/{self.image_name}{self.image_ext}"
         self.image_date = datetime.datetime.now().strftime('%Y%m%d')
 
+        self.windows = []
 
 class Controller(tk.Tk):
     def __init__(self, model):
@@ -588,8 +658,23 @@ class Controller(tk.Tk):
             self.draw_gradient(self.__dict__[f"{type}_canvas_gradient"], self.model.__dict__[f"{type}_color"][0], self.model.__dict__[f"{type}_color"][1])
             print(self.model.__dict__[f"{type}_color"][index])
 
+    def generate(self):
+        self.update_output_options()
+        self.update_shapes_options()
+        self.update_analysis_options()
         
-    
+        # Functionality to generate meta pixel
+        self.button_generate.config(state="disabled")
+        do_meta_pixel(self.model)
+        image_window = ImageWindow(self, self.model.image)
+        self.model.windows.append(image_window)
+        image_window.open()
+        self.button_generate.config(state="normal")
+
+    def exit(self):
+        # Functionality to exit the application
+        self.quit()
+
     
     def init_action_frame(self):
         # Create a frame for actions
@@ -604,79 +689,10 @@ class Controller(tk.Tk):
         self.button_generate = tk.Button(self.action_frame, text="Generate", command=self.generate)
         self.button_generate.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
-    def generate(self):
-        self.update_output_options()
-        self.update_shapes_options()
-        self.update_analysis_options()
-        
-        # Functionality to generate meta pixel
-        self.button_generate.config(state="disabled")
-        do_meta_pixel(self.model)
-        self.open_image_window()
-        self.button_generate.config(state="normal")
-
-    def exit(self):
-        # Functionality to exit the application
-        self.quit()
 
 
-    def open_image_window(self):
-        new_window = tk.Toplevel(self)
-        new_window.title("Image Window")
 
-        # Create a frame for the canvas and scrollbars
-        frame = tk.Frame(new_window)
-        frame.grid(row=0, column=0, sticky="nsew")
 
-        # Create a canvas widget
-        canvas = tk.Canvas(frame)
-        canvas.grid(row=0, column=0, sticky="nsew")
-
-        # Add scrollbars to the canvas
-        h_scrollbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL, command=canvas.xview)
-        h_scrollbar.grid(row=1, column=0, sticky="ew")
-        v_scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=canvas.yview)
-        v_scrollbar.grid(row=0, column=1, sticky="ns")
-        canvas.config(xscrollcommand=h_scrollbar.set, yscrollcommand=v_scrollbar.set)
-
-        # Create a copy of the image to scale
-        self.image_copy = self.model.image.copy()
-        self.tk_image = ImageTk.PhotoImage(self.image_copy)
-        self.image_id = canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
-
-        # Configure the scroll region
-        canvas.config(scrollregion=canvas.bbox(tk.ALL))
-
-        # Add a scale widget to adjust the size of the image
-        self.scale = tk.Scale(new_window, from_=10, to=200, orient=tk.HORIZONTAL, label="Scale", command=self.on_scale)
-        self.scale.set(100)
-        self.scale.grid(row=1, column=0, sticky="ew")
-
-        # Configure grid weights for the new window and frame
-        new_window.grid_rowconfigure(0, weight=1)
-        new_window.grid_rowconfigure(1, weight=0)
-        new_window.grid_columnconfigure(0, weight=1)
-
-        frame.grid_rowconfigure(0, weight=1)
-        frame.grid_columnconfigure(0, weight=1)
-
-        # Store references to the canvas and image for scaling
-        self.canvas = canvas
-        self.new_window = new_window
-        self.scale_update_id = None
-
-    def on_scale(self, scale_value):
-        if self.scale_update_id is not None:
-            self.after_cancel(self.scale_update_id)
-        self.scale_update_id = self.after(500, lambda: self.scale_image(scale_value))
-
-    def scale_image(self, scale_value):
-        scale_value = int(scale_value)
-        new_size = (self.image_copy.width * scale_value // 100, self.image_copy.height * scale_value // 100)
-        resized_image = self.image_copy.resize(new_size, Image.LANCZOS)
-        self.tk_image = ImageTk.PhotoImage(resized_image)
-        self.canvas.itemconfig(self.image_id, image=self.tk_image)
-        self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
 
 
 if __name__ == "__main__":
