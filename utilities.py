@@ -7,6 +7,7 @@ from PIL.ImageOps import scale
 
 import tkinter as tk
 from PIL import Image, ImageTk
+from screeninfo import get_monitors
 
 from constants import GOLDEN_RATIO
 
@@ -180,7 +181,7 @@ class ImageWindow:
 
     def open(self):
         self.new_window = tk.Toplevel(self.parent)
-        self.new_window.title(f"Image Window - {self.parent.model.image_name}")  
+        self.new_window.title(f"Image Window - {self.parent.model.image_name}")
 
         # Bind the close event to the on_close method
         self.new_window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -224,6 +225,29 @@ class ImageWindow:
 
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
+
+        # Position the window on the largest monitor if this is the first ImageWindow
+        if len(self.model.windows) == 1:
+            self.position_on_largest_monitor()
+        else:
+            self.position_on_previous_monitor()
+
+    def position_on_largest_monitor(self):
+        monitors = get_monitors()
+        largest_monitor = max(monitors, key=lambda m: m.width * m.height)
+        self.new_window.geometry(f"{largest_monitor.width}x{largest_monitor.height}+{largest_monitor.x}+{largest_monitor.y}")
+        self.new_window.update_idletasks()  # Ensure the window manager is aware of the new geometry
+
+    #position window on the same monitor as the previous window
+    def position_on_previous_monitor(self):
+        previous_window = self.model.windows[-2].new_window
+        x = previous_window.winfo_x()
+        y = previous_window.winfo_y()
+        width = previous_window.winfo_width()
+        height = previous_window.winfo_height()
+        offset = 20
+        self.new_window.geometry(f"{width}x{height}+{x+offset}+{y+offset}")
+        self.new_window.update_idletasks()
 
     def on_scale(self, scale_value):
         if self.scale_update_id is not None:
