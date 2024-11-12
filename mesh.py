@@ -60,6 +60,11 @@ def do_mesh(m):
         width, height = bounding_box_size(m.max_width, m.max_height, m.min_width, m.min_height)
         fill = random_color(vars(m), "fill") if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
 
+        transforms = []
+        if m.do_scale: transforms.append({"name":"scale", "scale_factor": m.scale_factor})
+        if m.do_blur: transforms.append({"name":"blur", "radius": m.blur_radius})
+        if m.do_invert: transforms.append({"name":"invert"})  
+
 
         (out, mask) = transformed_shape(
                   image=image,
@@ -69,7 +74,8 @@ def do_mesh(m):
                   height=height,
                   fill=fill,
                   outline=random_color(vars(m),"outline"),
-                  outline_width=2
+                  outline_width=2,
+                  transforms=transforms
               )
         image.paste(out, (dx,dy), mask)
 
@@ -89,13 +95,19 @@ if __name__ == '__main__':
         self.max_mesh_width = 4
         self.max_mesh_height = 6
         self.max_layers = 5
-        self.files = 1
+        self.files = 5
         self.shapes = 10
-        self.radius = 5
         self.prob_do_transform = .9
         self.prob_shape_destination_equals_source = .5
         self.transparent_threshold = 128
         self.transparent_above = False
+
+        self.do_blur = True
+        self.blur_radius = 5
+        self.do_scale = True
+        self.scale_factor = 8
+        self.do_invert = True
+
 
         self.fill_color = [(255,255,64,128),(192,128,32,32)]
         self.accent_color = [(255,16,16,212),(192,192,0,192)]
@@ -106,7 +118,7 @@ if __name__ == '__main__':
         if test_mesh:
           self.image_path = 'grid_image.png'
         else:
-          self.image_name = 'lightwater'
+          self.image_name = 'persimmons'
           self.image_ext = '.jpg'
           self.image_path = f'{self.image_name}{self.image_ext}'
           self.image_date = datetime.datetime.now().strftime("%Y%m%d")
