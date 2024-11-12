@@ -227,7 +227,7 @@ class ImageWindow:
         frame.grid_columnconfigure(0, weight=1)
 
         # Position the window on the largest monitor if this is the first ImageWindow
-        if len(self.model.windows) == 1:
+        if len(self.parent.windows) == 1:
             self.position_on_largest_monitor()
         else:
             self.position_on_previous_monitor()
@@ -240,7 +240,7 @@ class ImageWindow:
 
     #position window on the same monitor as the previous window
     def position_on_previous_monitor(self):
-        previous_window = self.model.windows[-2].new_window
+        previous_window = self.parent.windows[-2].new_window
         x = previous_window.winfo_x()
         y = previous_window.winfo_y()
         width = previous_window.winfo_width()
@@ -271,6 +271,6 @@ class ImageWindow:
 
     def on_close(self):
         # Remove the instance from the model's windows array
-        self.model.windows.remove(self)
+        self.parent.windows.remove(self)
         # Destroy the window
         self.new_window.destroy()
