@@ -101,7 +101,6 @@ def findEdges(image, minimum = 100, maximum = 200, apertureSize = 3):
 def meta_pixel(m, pdf_canvas):
 
   for file in range(0, m.files):
-    print("file", file)
 
     # Open the image
     image = Image.open(m.input_path)
@@ -122,7 +121,6 @@ def meta_pixel(m, pdf_canvas):
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, m.max_layers):
-      print("layer", _)
 
       # Create a new image with the mesh
       if m.save_layer_images:
@@ -179,7 +177,9 @@ def meta_pixel(m, pdf_canvas):
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
     m.image = image
-    # image.save(filename)
+    if m.create_pdf:
+      m.image.save(filename)
+
     # if m.show_image:
     #   image.show(filename)
 

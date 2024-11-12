@@ -4,6 +4,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import os, datetime
 from constants import GOLDEN_RATIO
+import json
 
 from utilities import ImageWindow
 from meta_pixel_view import do_meta_pixel
@@ -64,7 +65,21 @@ class Model:
         self.input_path = f"{self.input_dir}/{self.image_name}{self.image_ext}"
         self.image_date = datetime.datetime.now().strftime('%Y%m%d')
 
-        self.windows = []
+        # preference file name for saving and loading
+        self.pref_file = 'meta_pixel.prefs'
+
+    def load(self):
+
+        with open(self.pref_file, 'r') as f:
+            data = json.load(f)
+            for key in data:
+                setattr(self, key, data[key])
+
+    def save(self):
+        with open(self.pref_file, 'w') as f:
+            data = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+            json.dump(data, f, indent=4)
+
 
 class Controller(tk.Tk):
     def __init__(self, model):
@@ -72,6 +87,15 @@ class Controller(tk.Tk):
         self.model = model
         self.title("Meta Pixel")
         self.geometry("1024x800")
+
+        self.windows = []
+
+
+        # if preference file exists, load it
+        if os.path.exists(self.model.pref_file):
+            self.model.load()
+            self.load_all_widgets()
+
 
         # Create the main content frame
         self.content_frame = tk.Frame(self, bg="lightgrey")
@@ -107,6 +131,156 @@ class Controller(tk.Tk):
         # Initialize the files frame
         self.init_input_file()
         self.init_output_file()
+
+    #
+    # Load Widgets from Model
+    # 
+    
+    def load_all_widgets(self):
+        self.load_path_widgets()
+        self.load_output_options_widgets()
+        self.load_shapes_widgets()
+        self.load_analsys_widgets()
+        self.load_color_widgets()
+        self.update_idletasks()
+
+
+    def load_output_options_widgets(self):
+        self.entry_files.delete(0, tk.END)
+        self.entry_files.insert(0, self.model.files)
+
+        self.var_create_pdf.set(self.model.create_pdf)
+        self.var_show_pdf.set(self.model.show_pdf)
+        self.var_show_image.set(self.model.show_image)
+
+
+    def load_path_widgets(self):
+        self.entry_input_dir.delete(0, tk.END)
+        self.entry_input_dir.insert(0, self.model.input_dir)
+
+        self.entry_input_name.delete(0, tk.END)
+        self.entry_input_name.insert(0, self.model.image_name)
+
+        self.entry_input_ext.delete(0, tk.END)
+        self.entry_input_ext.insert(0, self.model.image_ext)
+
+        self.entry_output_dir.delete(0, tk.END)
+        self.entry_output_dir.insert(0, self.model.output_dir)
+
+    def load_shapes_widgets(self):
+        self.entry_shapes.delete(0, tk.END)
+        self.entry_shapes.insert(0, self.model.shapes)
+
+        self.entry_max_layers.delete(0, tk.END)
+        self.entry_max_layers.insert(0, self.model.max_layers)
+
+        self.entry_max_shape_layers.delete(0, tk.END)
+        self.entry_max_shape_layers.insert(0, self.model.max_shape_layers)
+
+        self.var_do_blur.set(self.model.do_blur)
+        self.entry_blur_radius.delete(0, tk.END)
+        self.entry_blur_radius.insert(0, self.model.blur_radius)
+
+        self.var_do_scale.set(self.model.do_scale)
+        self.entry_scale_factor.delete(0, tk.END)
+        self.entry_scale_factor.insert(0, self.model.scale_factor)
+
+        self.var_do_invert.set(self.model.do_invert)
+
+        self.scale_min_width_percentage.set(self.model.min_width_percentage)
+        self.scale_max_width_percentage.set(self.model.max_width_percentage)
+        self.scale_min_height_percentage.set(self.model.min_height_percentage)
+        self.scale_max_height_percentage.set(self.model.max_height_percentage)
+
+        self.scale_min_dx_percentage.set(self.model.min_dx_percentage)
+        self.scale_max_dx_percentage.set(self.model.max_dx_percentage)
+        self.scale_min_dy_percentage.set(self.model.min_dy_percentage)
+        self.scale_max_dy_percentage.set(self.model.max_dy_percentage)
+
+        self.scale_dx_dy_eq_sx_sy.set(self.model.prob_shape_destination_equals_source)
+
+    def load_analsys_widgets(self):
+        self.entry_edge_min.delete(0, tk.END)
+        self.entry_edge_min.insert(0, self.model.edge_min)
+
+        self.entry_edge_max.delete(0, tk.END)
+        self.entry_edge_max.insert(0, self.model.edge_max)
+
+        self.entry_edge_aperture.delete(0, tk.END)
+        self.entry_edge_aperture.insert(0, self.model.edge_aperture)
+
+        self.entry_eps.delete(0, tk.END)
+        self.entry_eps.insert(0, self.model.eps)
+
+        self.entry_min_samples.delete(0, tk.END)
+        self.entry_min_samples.insert(0, self.model.min_samples)
+
+    def load_color_widgets(self):
+        self.entry_transparent_threshold.delete(0, tk.END)
+        self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
+
+        self.entry_accent_color_percentage.delete(0, tk.END)
+        self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
+        self.load_gradient_widgets()
+
+    def load_gradient_widgets(self):
+        self.draw_gradient(self.__dict__["fill_canvas_gradient"], self.model.fill_color[0], self.model.fill_color[1])
+        self.draw_gradient(self.__dict__["outline_canvas_gradient"], self.model.outline_color[0], self.model.outline_color[1])
+        self.draw_gradient(self.__dict__["accent_canvas_gradient"], self.model.accent_color[0], self.model.accent_color[1])
+
+    #
+    # Store Widgets in Model 
+    #
+
+    def store_all_widgets(self):
+        self.store_path_widgets()
+        self.store_output_options_widgets()
+        self.store_shapes_widgets()
+        self.store_analysis_widgets()
+        self.store_color_widgets()
+
+    def store_path_widgets(self):
+        self.model.input_dir = self.entry_input_dir.get()
+        self.model.image_name = self.entry_input_name.get()
+        self.model.image_ext = self.entry_input_ext.get()
+        self.model.output_dir = self.entry_output_dir.get()
+
+    def store_color_widgets(self):
+        self.model.transparent_threshold = self.entry_transparent_threshold.get()
+        self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
+
+    def store_output_options_widgets(self):
+        self.model.files = int(self.entry_files.get())
+        self.model.create_pdf = self.var_create_pdf.get()
+        if self.model.create_pdf:
+            self.model.show_pdf = self.var_show_pdf.get()
+            self.check_show_pdf.config(state="normal")    
+        else:
+            self.model.show_pdf = False
+            self.check_show_pdf.deselect()
+            #disable the show_pdf checkbutton
+            self.check_show_pdf.config(state="disabled")    
+        self.model.show_image = self.var_show_image.get()
+
+    def store_shapes_widgets(self):
+        self.model.shapes = int(self.entry_shapes.get())
+        self.model.max_layers = int(self.entry_max_layers.get())
+        self.model.max_shape_layers = int(self.entry_max_shape_layers.get())
+        self.model.do_blur = self.var_do_blur.get()
+        self.model.blur_radius = int(self.entry_blur_radius.get())
+        self.model.do_scale = self.var_do_scale.get()
+        self.model.scale_factor = int(self.entry_scale_factor.get())
+        self.model.do_invert = self.var_do_invert.get()
+
+    def store_analysis_widgets(self):
+        self.model.edge_min = int(self.entry_edge_min.get())
+        self.model.edge_max = int(self.entry_edge_max.get())
+        self.model.edge_aperture = int(self.entry_edge_aperture.get())
+        self.model.eps = int(self.entry_eps.get())
+        self.model.min_samples = int(self.entry_min_samples.get())
+
+
+
 
     def init_input_file(self):
 
@@ -165,8 +339,6 @@ class Controller(tk.Tk):
         self.entry_input_ext.delete(0, tk.END)
         self.entry_input_ext.insert(0, ext)
 
-        if self.model.input_path:
-            print(f"Selected file: {self.model.input_path}")
 
     def init_output_file(self):
         # Place a label "Output" in row 1, column 0
@@ -194,19 +366,6 @@ class Controller(tk.Tk):
         self.output_options_frame.grid(row=3, column=0, padx=10, sticky="nsew")
         self.init_output_options()
 
-    def update_output_options(self):
-        self.model.files = int(self.entry_files.get())
-        self.model.create_pdf = self.var_create_pdf.get()
-        if self.model.create_pdf:
-            self.model.show_pdf = self.var_show_pdf.get()
-            self.check_show_pdf.config(state="normal")    
-        else:
-            self.model.show_pdf = False
-            self.check_show_pdf.deselect()
-            #disable the show_pdf checkbutton
-            self.check_show_pdf.config(state="disabled")    
-        self.model.show_image = self.var_show_image.get()
-
     def init_output_options(self):
 
         # Label for files
@@ -220,18 +379,41 @@ class Controller(tk.Tk):
 
         # Checkbutton for create_pdf
         self.var_create_pdf = tk.BooleanVar(value=self.model.create_pdf)
-        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf, command=self.update_output_options)
+        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf, command=self.store_output_options_widgets)
         self.check_create_pdf.grid(row=0, column=2, padx=10, pady=0, sticky="w")
 
         # Checkbutton for show_pdf
         self.var_show_pdf = tk.BooleanVar(value=self.model.show_pdf)
-        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf, command=self.update_output_options)
+        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf, command=self.store_output_options_widgets)
         self.check_show_pdf.grid(row=0, column=3, padx=10, pady=0, sticky="w")
 
         # Checkbutton for show_image
         self.var_show_image = tk.BooleanVar(value=self.model.show_image)
-        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image, command=self.update_output_options)
+        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image, command=self.store_output_options_widgets)
         self.check_show_image.grid(row=0, column=4, padx=10, pady=0, sticky="w")
+
+        #AskOpenFile preferences file
+        self.button_save = tk.Button(self.output_options_frame, text="Save Preferences", command=self.select_save_prefs)
+        self.button_save.grid(row=0, column=5, padx=10, pady=0, sticky="w")
+
+        #AskOpenFile preferences file
+        self.button_load = tk.Button(self.output_options_frame, text="Load Preferences", command=self.select_load_prefs)   
+        self.button_load.grid(row=0, column=6, padx=10, pady=0, sticky="w")
+
+    def select_save_prefs(self):
+        pref_file = filedialog.asksaveasfilename(initialdir='.', title="Save Preferences", filetypes=([("Prefs files", "*.prefs")]), initialfile=self.model.image_name)
+        if pref_file:
+            self.store_all_widgets()
+            self.model.pref_file = pref_file
+            self.model.save()
+
+    def select_load_prefs(self):
+        pref_file = filedialog.askopenfilename(initialdir='.', title="Load Preferences", filetypes=([("Prefs files", "*.prefs")]))
+        if pref_file:
+            self.model.pref_file = pref_file
+            self.model.load()
+            self.load_all_widgets()
+
 
     def init_shapes_frame(self):
         # Create a frame for shapes
@@ -347,16 +529,6 @@ class Controller(tk.Tk):
         self.scale_dx_dy_eq_sx_sy.set(self.model.prob_shape_destination_equals_source)
 
 
-    def update_shapes_options(self):
-        self.model.shapes = int(self.entry_shapes.get())
-        self.model.max_layers = int(self.entry_max_layers.get())
-        self.model.max_shape_layers = int(self.entry_max_shape_layers.get())
-        self.model.do_blur = self.var_do_blur.get()
-        self.model.blur_radius = int(self.entry_blur_radius.get())
-        self.model.do_scale = self.var_do_scale.get()
-        self.model.scale_factor = int(self.entry_scale_factor.get())
-        self.model.do_invert = self.var_do_invert.get()
-
     def init_shapes_widgets(self):
         # Label for shapes
         self.label_shapes = tk.Label(self.shapes_sub_frame1, text="Shapes")
@@ -413,12 +585,6 @@ class Controller(tk.Tk):
         self.init_shapes_width_height()
         self.init_shapes_dx_dy()
 
-    def update_analysis_options(self):
-        self.model.edge_min = int(self.entry_edge_min.get())
-        self.model.edge_max = int(self.entry_edge_max.get())
-        self.model.edge_aperture = int(self.entry_edge_aperture.get())
-        self.model.eps = int(self.entry_eps.get())
-        self.model.min_samples = int(self.entry_min_samples.get())
 
     def init_analysis_frame(self):
         # Create a frame for analysis
@@ -494,7 +660,6 @@ class Controller(tk.Tk):
         self.entry_min_samples.grid(row=2, column=1, padx=0, pady=0, sticky="ew")   
         self.entry_min_samples.insert(0, self.model.min_samples)    
         
-          
     def init_color_frame(self):
         # Create a frame for colors
         self.color_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
@@ -532,20 +697,20 @@ class Controller(tk.Tk):
         self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
 
         # initialize the fill color widgets
-        self.init_color_widget(self.color_sub_frame1, 0, 0, "fill", 0);
-        self.initialize_gradient_widgets(self.color_sub_frame1, 0, 2, "fill");
-        self.init_color_widget(self.color_sub_frame1, 0, 2, "fill", 1);
+        self.init_color_widget(self.color_sub_frame1, 0, 0, "fill", 0)
+        self.initialize_gradient_widgets(self.color_sub_frame1, 0, 2, "fill")
+        self.init_color_widget(self.color_sub_frame1, 0, 2, "fill", 1)
 
         # initialize the outline color widgets
-        self.init_color_widget(self.color_sub_frame1, 1, 0, "outline", 0);
-        self.initialize_gradient_widgets(self.color_sub_frame1, 1, 2, "outline");
-        self.init_color_widget(self.color_sub_frame1, 1, 2, "outline", 1);
+        self.init_color_widget(self.color_sub_frame1, 1, 0, "outline", 0)
+        self.initialize_gradient_widgets(self.color_sub_frame1, 1, 2, "outline")
+        self.init_color_widget(self.color_sub_frame1, 1, 2, "outline", 1)
 
         # initialize the accent color widgets
-        self.init_color_widget(self.color_sub_frame1, 2, 0, "accent", 0);
-        self.initialize_gradient_widgets(self.color_sub_frame1, 2, 2, "accent");
-        self.init_color_widget(self.color_sub_frame1, 2, 2, "accent", 1);
-
+        self.init_color_widget(self.color_sub_frame1, 2, 0, "accent", 0)
+        self.initialize_gradient_widgets(self.color_sub_frame1, 2, 2, "accent")
+        self.init_color_widget(self.color_sub_frame1, 2, 2, "accent", 1)
+    
     def initialize_gradient_widgets(self, frame, row, column, type):
         smd = self.model.__dict__
         sd = self.__dict__
@@ -590,15 +755,13 @@ class Controller(tk.Tk):
             print(self.model.__dict__[f"{type}_color"][index])
 
     def generate(self):
-        self.update_output_options()
-        self.update_shapes_options()
-        self.update_analysis_options()
+        self.store_all_widgets()
         
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
         image_window = ImageWindow(self, self.model.image, self.model)
-        self.model.windows.append(image_window)
+        self.windows.append(image_window)
         image_window.open()
         self.button_generate.config(state="normal")
 
