@@ -243,14 +243,9 @@ class Controller(tk.Tk):
         self.entry_min_samples.insert(0, self.model.min_samples)
 
     def load_color_widgets(self):
-        self.entry_transparent_threshold.delete(0, tk.END)
-        self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
+        self.scale_transparent_threshold.set(self.model.transparent_threshold)
         self.var_transparent_above.set(self.model.transparent_above)
-
         self.scale_accent_color_percentage.set(self.model.accent_color_percentage)
-
-        # self.entry_accent_color_percentage.delete(0, tk.END)
-        # self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
         self.load_gradient_widgets()
 
     def load_gradient_widgets(self):
@@ -315,7 +310,7 @@ class Controller(tk.Tk):
         self.model.min_samples = int(self.entry_min_samples.get())
 
     def store_color_widgets(self):
-        self.model.transparent_threshold = int(self.entry_transparent_threshold.get())
+        self.model.transparent_threshold = int(self.scale_transparent_threshold.get())
 
         self.model.accent_color_percentage = self.scale_accent_color_percentage.get()
 
@@ -775,9 +770,14 @@ class Controller(tk.Tk):
         self.label_transparent_threshold = tk.Label(self.color_sub_frame2, text="Transparent Threshold")
         self.label_transparent_threshold.grid(row=0, column=0, padx=10, pady=0, sticky="w")
 
-        self.entry_transparent_threshold = tk.Entry(self.color_sub_frame2)
-        self.entry_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
-        self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
+        # Scale for accent color percentage
+        self.scale_transparent_threshold = tk.Scale(self.color_sub_frame2, from_=0, to=255, resolution=1, orient=tk.HORIZONTAL)
+        self.scale_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
+        self.scale_transparent_threshold.set(self.model.transparent_threshold)
+        
+        # self.entry_transparent_threshold = tk.Entry(self.color_sub_frame2)
+        # self.entry_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
+        # self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
 
         self.label_accent_color_percentage = tk.Label(self.color_sub_frame2, text="Accent Color %")
         self.label_accent_color_percentage.grid(row=4, column=0, padx=10, pady=10, sticky="w")
