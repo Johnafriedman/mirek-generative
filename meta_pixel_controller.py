@@ -17,6 +17,11 @@ class Model:
         self.show_image = True
         self.image = None
 
+        # mesh
+        self.use_mask = True
+        self.max_mesh_width = 4
+        self.max_mesh_height = 6
+
         self.max_layers = 2
         self.max_shape_layers = 2
         self.shapes = 2**7
@@ -30,7 +35,8 @@ class Model:
         self.do_invert = True
         self.prob_shape_destination_equals_source = 1
         self.transparent_threshold = 128
-        self.transparent_above_threshold = True
+        self.transparent_above = True
+
 
         # Edge detection
         self.edge_min = 100 # 0 - 255
@@ -218,6 +224,8 @@ class Controller(tk.Tk):
     def load_color_widgets(self):
         self.entry_transparent_threshold.delete(0, tk.END)
         self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
+        self.var_transparent_above.set(self.model.transparent_above)
+
 
         self.entry_accent_color_percentage.delete(0, tk.END)
         self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
@@ -246,8 +254,10 @@ class Controller(tk.Tk):
         self.model.output_dir = self.entry_output_dir.get()
 
     def store_color_widgets(self):
-        self.model.transparent_threshold = self.entry_transparent_threshold.get()
+        self.model.transparent_threshold = int(self.entry_transparent_threshold.get())
         self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
+        self.model.transparent_above = self.var_transparent_above.get()
+
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
@@ -695,6 +705,11 @@ class Controller(tk.Tk):
         self.entry_accent_color_percentage = tk.Entry(self.color_sub_frame2)
         self.entry_accent_color_percentage.grid(row=3, column=1, padx=0, pady=0, sticky="ew")
         self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
+
+        # Checkbutton for transparent_above
+        self.var_transparent_above = tk.BooleanVar(value=self.model.transparent_above)
+        self.check_transparent_above = tk.Checkbutton(self.color_sub_frame2, text="Transparent above", variable=self.var_transparent_above)
+        self.check_transparent_above.grid(row=4, column=0, padx=10, pady=0, sticky="w")
 
         # initialize the fill color widgets
         self.init_color_widget(self.color_sub_frame1, 0, 0, "fill", 0)

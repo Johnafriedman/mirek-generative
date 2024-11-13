@@ -10,10 +10,14 @@ from sklearn.cluster import DBSCAN
 from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageChops import invert
 from PIL.ImageOps import scale
+from PIL.ImageTransform import MeshTransform
+
 import numpy as np
 from PIL import Image
 import random, os
 import cv2
+
+from transforms import create_randomized_aligned_mesh
 
 from constants import *
 from utilities import make_transparent, transformed_shape, bounding_box_size, random_color
@@ -116,11 +120,23 @@ def meta_pixel(m, pdf_canvas):
     max_dx = image.width * m.max_dx_percentage
     max_dy = image.height * m.max_dy_percentage
 
+    im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
+
     edges = findEdges(image, m.edge_min, m.edge_max, m.edge_aperture)
     edge_pixel_cnt = int(len(edges))
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, m.max_layers):
+
+      # Apply the mesh transform
+      width = int(random.uniform(2, m.max_mesh_width))
+      height = int(random.uniform(2, m.max_mesh_height))
+      mesh = create_randomized_aligned_mesh(width,height,im.width,im.height)
+      # Create a new image with the mesh
+      out = im.transform(im.size, MeshTransform(mesh))
+      mask = out if m.use_mask else None
+      #draw the transformed image on the original using a mask
+      image.paste(out, None, mask)
 
       # Create a new image with the mesh
       if m.save_layer_images:
