@@ -18,6 +18,7 @@ class Model:
         self.image = None
 
         # mesh
+        self.do_mesh = True
         self.use_mask = True
         self.max_mesh_width = 4
         self.max_mesh_height = 6
@@ -111,15 +112,36 @@ class Controller(tk.Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+        self.init_all_frames()
+
+        self.update_idletasks()
+        self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{self.winfo_x()}+{self.winfo_y()}")
+
+    def init_all_frames(self):
         self.init_file_frame()
         self.init_output_options_frame()
+        self.init_mesh_frame()
         self.init_shapes_frame()
         self.init_analysis_frame()
         self.init_color_frame()
         self.init_action_frame()
 
+    def load_all_widgets(self):
+        self.load_path_widgets()
+        self.load_output_options_widgets()
+        self.load_mesh_widgets()
+        self.load_shapes_widgets()
+        self.load_analsys_widgets()
+        self.load_color_widgets()
         self.update_idletasks()
-        self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{self.winfo_x()}+{self.winfo_y()}")
+
+    def store_all_widgets(self):
+        self.store_path_widgets()
+        self.store_output_options_widgets()
+        self.store_mesh_widgets()
+        self.store_shapes_widgets()
+        self.store_analysis_widgets()
+        self.store_color_widgets()
 
     def init_file_frame(self):
         # Create a frame for files
@@ -141,15 +163,6 @@ class Controller(tk.Tk):
     #
     # Load Widgets from Model
     # 
-    
-    def load_all_widgets(self):
-        self.load_path_widgets()
-        self.load_output_options_widgets()
-        self.load_shapes_widgets()
-        self.load_analsys_widgets()
-        self.load_color_widgets()
-        self.update_idletasks()
-
 
     def load_output_options_widgets(self):
         self.entry_files.delete(0, tk.END)
@@ -205,6 +218,14 @@ class Controller(tk.Tk):
 
         self.scale_dx_dy_eq_sx_sy.set(self.model.prob_shape_destination_equals_source)
 
+    def load_mesh_widgets(self):
+        self.var_do_mesh.set(self.model.do_mesh)
+        self.var_use_mask.set(self.model.use_mask)
+        self.entry_max_mesh_width.delete(0, tk.END)
+        self.entry_max_mesh_width.insert(0, self.model.max_mesh_width)
+        self.entry_max_mesh_height.delete(0, tk.END)
+        self.entry_max_mesh_height.insert(0, self.model.max_mesh_height)
+
     def load_analsys_widgets(self):
         self.entry_edge_min.delete(0, tk.END)
         self.entry_edge_min.insert(0, self.model.edge_min)
@@ -240,24 +261,11 @@ class Controller(tk.Tk):
     # Store Widgets in Model 
     #
 
-    def store_all_widgets(self):
-        self.store_path_widgets()
-        self.store_output_options_widgets()
-        self.store_shapes_widgets()
-        self.store_analysis_widgets()
-        self.store_color_widgets()
-
     def store_path_widgets(self):
         self.model.input_dir = self.entry_input_dir.get()
         self.model.image_name = self.entry_input_name.get()
         self.model.image_ext = self.entry_input_ext.get()
         self.model.output_dir = self.entry_output_dir.get()
-
-    def store_color_widgets(self):
-        self.model.transparent_threshold = int(self.entry_transparent_threshold.get())
-        self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
-        self.model.transparent_above = self.var_transparent_above.get()
-
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
@@ -271,6 +279,22 @@ class Controller(tk.Tk):
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
         self.model.show_image = self.var_show_image.get()
+
+    def store_mesh_widgets(self):
+        self.model.do_mesh = self.var_do_mesh.get()
+        if self.model.do_mesh:
+            self.check_use_mask.config(state="normal")
+            self.entry_max_mesh_width.config(state="normal")
+            self.entry_max_mesh_height.config(state="normal")
+            self.model.use_mask = self.var_use_mask.get()
+            self.model.max_mesh_width = int(self.entry_max_mesh_width.get())
+            self.model.max_mesh_height = int(self.entry_max_mesh_height.get())
+        else:
+            # disable the remaining mesh widgets
+            self.check_use_mask.config(state="disabled")
+            self.entry_max_mesh_width.config(state="disabled")
+            self.entry_max_mesh_height.config(state="disabled")
+
 
     def store_shapes_widgets(self):
         self.model.shapes = int(self.entry_shapes.get())
@@ -289,8 +313,14 @@ class Controller(tk.Tk):
         self.model.eps = int(self.entry_eps.get())
         self.model.min_samples = int(self.entry_min_samples.get())
 
+    def store_color_widgets(self):
+        self.model.transparent_threshold = int(self.entry_transparent_threshold.get())
+        self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
+        self.model.transparent_above = self.var_transparent_above.get()
 
-
+# 
+# Initialize the frames
+# 
 
     def init_input_file(self):
 
@@ -425,10 +455,56 @@ class Controller(tk.Tk):
             self.load_all_widgets()
 
 
+# 
+# Initialize the mesh frames
+#
+
+    def init_mesh_frame(self):
+        # Create a frame for mesh
+        self.mesh_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
+        self.mesh_frame.grid(row=4, column=0, padx=10, pady=10, sticky="nsew")
+
+        # Configure grid weights for the mesh frame
+        self.mesh_frame.grid_rowconfigure(0, weight=1)
+        for i in range(6):
+            self.mesh_frame.grid_columnconfigure(i, weight=1)
+
+        self.init_mesh_widgets()
+
+    def init_mesh_widgets(self):
+
+        # Checkbutton for do_mesh
+        self.var_do_mesh = tk.BooleanVar(value=self.model.do_mesh)
+        self.check_do_mesh = tk.Checkbutton(self.mesh_frame, text="Mesh", variable=self.var_do_mesh, command=self.store_mesh_widgets)
+        self.check_do_mesh.grid(row=0, column=1, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for use_mask
+        self.var_use_mask = tk.BooleanVar(value=self.model.use_mask)
+        self.check_use_mask = tk.Checkbutton(self.mesh_frame, text="Mask", variable=self.var_use_mask)
+        self.check_use_mask.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+
+        # Label for max_mesh_width
+        self.label_max_mesh_width = tk.Label(self.mesh_frame, text="Max Columns")
+        self.label_max_mesh_width.grid(row=0, column=3, padx=10, pady=0, sticky="w")
+
+        # Entry for max_mesh_width
+        self.entry_max_mesh_width = tk.Entry(self.mesh_frame)
+        self.entry_max_mesh_width.grid(row=0, column=4, padx=0, pady=0, sticky="ew")
+        self.entry_max_mesh_width.insert(0, self.model.max_mesh_width)
+
+        # Label for max_mesh_height
+        self.label_max_mesh_height = tk.Label(self.mesh_frame, text="Max Rows")
+        self.label_max_mesh_height.grid(row=0, column=5, padx=10, pady=0, sticky="w")
+
+        # Entry for max_mesh_height
+        self.entry_max_mesh_height = tk.Entry(self.mesh_frame)
+        self.entry_max_mesh_height.grid(row=0, column=6, padx=0, pady=0, sticky="ew")
+        self.entry_max_mesh_height.insert(0, self.model.max_mesh_height)
+    
     def init_shapes_frame(self):
         # Create a frame for shapes
         self.shapes_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.shapes_frame.grid(row=5, column=0, padx=10, pady=10, sticky="nsew")
+        self.shapes_frame.grid(row=8, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the shapes frame
         for i in range(13):
@@ -599,7 +675,7 @@ class Controller(tk.Tk):
     def init_analysis_frame(self):
         # Create a frame for analysis
         self.analysis_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.analysis_frame.grid(row=6, column=0, padx=10, pady=10, sticky="nsew")
+        self.analysis_frame.grid(row=15, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the analysis frame
         for i in range(5):
@@ -673,7 +749,7 @@ class Controller(tk.Tk):
     def init_color_frame(self):
         # Create a frame for colors
         self.color_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.color_frame.grid(row=7, column=0, padx=10, pady=10, sticky="nsew")
+        self.color_frame.grid(row=16, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the color frame
         for i in range(5):
@@ -788,7 +864,7 @@ class Controller(tk.Tk):
     def init_action_frame(self):
         # Create a frame for actions
         self.action_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightcoral")
-        self.action_frame.grid(row=14, column=0, padx=10, pady=10, sticky="ews")
+        self.action_frame.grid(row=23, column=0, padx=10, pady=10, sticky="ews")
         self.action_frame.grid_columnconfigure(0, weight=1)
         self.action_frame.grid_columnconfigure(1, weight=1)
 
