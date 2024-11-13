@@ -131,7 +131,7 @@ def meta_pixel(m, pdf_canvas):
     max_dx = image.width * m.max_dx_percentage
     max_dy = image.height * m.max_dy_percentage
 
-    im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
+    # im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
 
     edges = findEdges(image, m.edge_min, m.edge_max, m.edge_aperture)
     edge_pixel_cnt = int(len(edges))
@@ -139,15 +139,17 @@ def meta_pixel(m, pdf_canvas):
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, m.max_layers):
 
+
       # Apply the mesh transform
       if m.do_mesh:
+        im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
         out, mask = do_mesh_transform(m, im)
         image.paste(out, None, mask)
 
 
       # Create a new image with the mesh
-      if m.save_layer_images:
-        overlay = Image.new('RGBA', (image.width, image.height), (0, 0, 0, 0))
+      # if m.save_layer_images:
+      #   overlay = Image.new('RGBA', (image.width, image.height), (0, 0, 0, 0))
 
       for i in range(start, edge_pixel_cnt, edge_increment):
 
@@ -186,12 +188,12 @@ def meta_pixel(m, pdf_canvas):
           )
 
           image.paste(out, (dx, dy), mask)
-          if m.save_layer_images:
-            overlay.paste(out, (dx, dy), mask)
+          # if m.save_layer_images:
+          #   overlay.paste(out, (dx, dy), mask)
 
-      if m.save_layer_images:
-        filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
-        overlay.save(filename)
+      # if m.save_layer_images:
+      #   filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
+      #   overlay.save(filename)
 
     if len(edges) > 0:
       clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
@@ -203,8 +205,8 @@ def meta_pixel(m, pdf_canvas):
     if m.create_pdf:
       m.image.save(filename)
 
-    # if m.show_image:
-    #   image.show(filename)
+    if m.show_image:
+      image.show(filename)
 
     if m.create_pdf:
       # Add a new page to the PDF with the same size as the image

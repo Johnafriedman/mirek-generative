@@ -26,7 +26,7 @@ class Model:
         self.max_layers = 2
         self.max_shape_layers = 2
         self.shapes = 2**7
-        self.save_layer_images = False
+        # self.save_layer_images = False
         self.files = 1
 
         self.do_blur = True
