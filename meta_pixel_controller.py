@@ -247,9 +247,10 @@ class Controller(tk.Tk):
         self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
         self.var_transparent_above.set(self.model.transparent_above)
 
+        self.scale_accent_color_percentage.set(self.model.accent_color_percentage)
 
-        self.entry_accent_color_percentage.delete(0, tk.END)
-        self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
+        # self.entry_accent_color_percentage.delete(0, tk.END)
+        # self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
         self.load_gradient_widgets()
 
     def load_gradient_widgets(self):
@@ -315,7 +316,10 @@ class Controller(tk.Tk):
 
     def store_color_widgets(self):
         self.model.transparent_threshold = int(self.entry_transparent_threshold.get())
-        self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
+
+        self.model.accent_color_percentage = self.scale_accent_color_percentage.get()
+
+        # self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
         self.model.transparent_above = self.var_transparent_above.get()
 
 # 
@@ -775,17 +779,18 @@ class Controller(tk.Tk):
         self.entry_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
         self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
 
-        self.label_accent_color_percentage = tk.Label(self.color_sub_frame2, text="Accent Color Percentage")
-        self.label_accent_color_percentage.grid(row=3, column=0, padx=10, pady=0, sticky="w")
+        self.label_accent_color_percentage = tk.Label(self.color_sub_frame2, text="Accent Color %")
+        self.label_accent_color_percentage.grid(row=4, column=0, padx=10, pady=10, sticky="w")
 
-        self.entry_accent_color_percentage = tk.Entry(self.color_sub_frame2)
-        self.entry_accent_color_percentage.grid(row=3, column=1, padx=0, pady=0, sticky="ew")
-        self.entry_accent_color_percentage.insert(0, self.model.accent_color_percentage)
+        # Scale for accent color percentage
+        self.scale_accent_color_percentage = tk.Scale(self.color_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL)
+        self.scale_accent_color_percentage.grid(row=4, column=1, padx=0, pady=0, sticky="ew")
+        self.scale_accent_color_percentage.set(self.model.accent_color_percentage)
 
         # Checkbutton for transparent_above
         self.var_transparent_above = tk.BooleanVar(value=self.model.transparent_above)
         self.check_transparent_above = tk.Checkbutton(self.color_sub_frame2, text="Transparent above", variable=self.var_transparent_above)
-        self.check_transparent_above.grid(row=4, column=0, padx=10, pady=0, sticky="w")
+        self.check_transparent_above.grid(row=2, column=0, padx=10, pady=0, sticky="w")
 
         # initialize the fill color widgets
         self.init_color_widget(self.color_sub_frame1, 0, 0, "fill", 0)
