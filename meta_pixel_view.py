@@ -102,6 +102,17 @@ def findEdges(image, minimum = 100, maximum = 200, apertureSize = 3):
     edges = np.argwhere(edges != 0)
     return edges
 
+def do_mesh_transform(model, image):
+        m = model
+        width = int(random.uniform(2, m.max_mesh_width))
+        height = int(random.uniform(2, m.max_mesh_height))
+        mesh = create_randomized_aligned_mesh(width,height,image.width,image.height)
+        # Create a new image with the mesh
+        out = image.transform(image.size, MeshTransform(mesh))
+        mask = out if m.use_mask else None
+        #draw the transformed image on the original using a mask
+        return (out, mask)
+
 def meta_pixel(m, pdf_canvas):
 
   for file in range(0, m.files):
@@ -129,14 +140,10 @@ def meta_pixel(m, pdf_canvas):
     for _ in range(0, m.max_layers):
 
       # Apply the mesh transform
-      width = int(random.uniform(2, m.max_mesh_width))
-      height = int(random.uniform(2, m.max_mesh_height))
-      mesh = create_randomized_aligned_mesh(width,height,im.width,im.height)
-      # Create a new image with the mesh
-      out = im.transform(im.size, MeshTransform(mesh))
-      mask = out if m.use_mask else None
-      #draw the transformed image on the original using a mask
-      image.paste(out, None, mask)
+      if m.do_mesh:
+        out, mask = do_mesh_transform(m, im)
+        image.paste(out, None, mask)
+
 
       # Create a new image with the mesh
       if m.save_layer_images:
