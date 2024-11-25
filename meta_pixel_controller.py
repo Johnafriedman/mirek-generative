@@ -15,7 +15,7 @@ class Model:
         self.create_pdf = False
         self.show_pdf = False
         self.show_image = True
-        self.image = None
+        self._image = None
 
         # mesh
         self.do_mesh = True
