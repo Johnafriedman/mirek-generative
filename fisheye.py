@@ -45,7 +45,7 @@ def display_image_with_pygame(image):
     INC_STRENGTH = 0.1
     MAX_FOCAL_LENGTH = width * 10
     MIN_FOCAL_LENGTH = width // 10
-    INC_FOCAL_LENGTH = 0.1
+    INC_FOCAL_LENGTH = 10
     c_x = width // 2
     c_y = height // 2
     f_x = width
@@ -56,15 +56,16 @@ def display_image_with_pygame(image):
             if event.type == pygame.QUIT:
                 running = False
                 # use arrow buttons to adjust strength
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    strength = min(strength + 0.1, MIN_STRENGTH)
+                elif event.key == pygame.K_DOWN:
+                    strength = max(strength - 0.1, MAX_STRENGTH)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_down = True
                     last_mouse_x = event.pos[0]
                     last_mouse_y = event.pos[1]
-                elif event.button == 4:  # Mouse wheel up
-                    strength = min(strength + 0.1, MIN_STRENGTH)
-                elif event.button == 5:  # Mouse wheel down
-                    strength = max(strength - 0.1, MAX_STRENGTH)
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:  # Left mouse button
                     mouse_down = False
