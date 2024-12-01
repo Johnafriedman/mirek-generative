@@ -2,9 +2,9 @@ from ttkwidgets.color import askcolor
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
-import os, datetime
+import os, datetime, sys
 from constants import GOLDEN_RATIO
-import json
+import json, subprocess
 
 from utilities import ImageWindow
 from meta_pixel_view import do_meta_pixel
@@ -861,6 +861,14 @@ class Controller(tk.Tk):
         image_window.open()
         self.button_generate.config(state="normal")
 
+    def fisheye(self):
+        self.store_all_widgets()
+        # execute fisheye.py in the terminal with commandline parameters        
+        # Functionality to generate fisheye
+        self.button_fisheye.config(state="disabled")
+        subprocess.run(["python", "mirek-generative/fisheye.py", self.model.input_path, self.model.output_dir, self.model.image_name, self.model.image_date])
+        self.button_fisheye.config(state="normal")
+
     def exit(self):
         # Functionality to exit the application
         self.quit()
@@ -872,12 +880,16 @@ class Controller(tk.Tk):
         self.action_frame.grid(row=23, column=0, padx=10, pady=10, sticky="ews")
         self.action_frame.grid_columnconfigure(0, weight=1)
         self.action_frame.grid_columnconfigure(1, weight=1)
+        self.action_frame.grid_columnconfigure(2, weight=1)
 
         button_exit = tk.Button(self.action_frame, text="Exit", command=self.exit)
         button_exit.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
         self.button_generate = tk.Button(self.action_frame, text="Generate", command=self.generate)
         self.button_generate.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+
+        self.button_fisheye = tk.Button(self.action_frame, text="Fisheye", command=self.fisheye)
+        self.button_fisheye.grid(row=0, column=2, padx=10, pady=10, sticky="e")
 
 
 
