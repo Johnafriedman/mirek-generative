@@ -1,3 +1,5 @@
+import datetime
+import os
 import cv2
 import numpy as np
 import pygame
@@ -21,6 +23,15 @@ def apply_fisheye(image, c_x, c_y, f_x, f_y, strength=1.0):
 
 def display_image_with_pygame(image):
     """Displays an image using Pygame."""
+
+    #split the path to get the filename
+    directory, name = os.path.split(input_path)
+
+    name, ext = os.path.splitext(name)    
+    input_dir = directory
+    image_name = name
+    image_ext = ext
+
     pygame.init()
     height, width = image.shape[:2]
     screen = pygame.display.set_mode((width, height))
@@ -51,6 +62,9 @@ def display_image_with_pygame(image):
     f_x = width
     f_y = width
 
+    fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
+
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -61,6 +75,19 @@ def display_image_with_pygame(image):
                     strength = min(strength + 0.1, MIN_STRENGTH)
                 elif event.key == pygame.K_DOWN:
                     strength = max(strength - 0.1, MAX_STRENGTH)
+                # if the key is esc then exit
+                elif event.key == pygame.K_ESCAPE:
+                    running = False
+            # if s is released save image
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_s:
+                    image_date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"{output_dir}/fisheye_{image_name}_{image_date}.png"
+                    # swap x and y coords for writing image
+                    fisheye_image = np.swapaxes(fisheye_image, 0, 1)
+
+                    cv2.imwrite(filename, fisheye_image)
+                    print(f"Image saved to {filename}")
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_down = True
@@ -112,6 +139,7 @@ def main(image_path):
 
     # set size of image. algorithem generates a square image
     size = 1600
+
     dim = (size, size)
     image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
@@ -121,14 +149,15 @@ def main(image_path):
 if __name__ == "__main__":
     # get path from commandline if available
     if len(sys.argv) > 1:
-        image_path = sys.argv[1]
+        input_path = sys.argv[1]
 
     else:
-        image_path = "input/Photos-001/PXL_20240724_165101814~3.jpg"  # Replace with the path to your image file
+        input_path = "input/Photos-001/PXL_20240724_165101814~3.jpg"  # Replace with the path to your image file
 
     if len(sys.argv) > 2:
         output_dir = sys.argv[2]
     else:
-        output_dir = "output/"
+        output_dir = "output"
 
-    main(image_path)
+
+    main(input_path)
