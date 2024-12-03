@@ -858,7 +858,7 @@ class Controller(tk.Tk):
         do_meta_pixel(self.model)
         image_window = ImageWindow(self, self.model.image, self.model)
         self.windows.append(image_window)
-        # image_window.open()
+        image_window.open()
         self.button_generate.config(state="normal")
 
     def fisheye(self):
