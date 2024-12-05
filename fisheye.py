@@ -47,6 +47,7 @@ def display_image_with_pygame(image):
 
     # Main loop
     running = True
+    recording = False
     strength = -2.5  # Initial strength
     mouse_down = False
     last_mouse_x = None
@@ -61,6 +62,8 @@ def display_image_with_pygame(image):
     c_y = height // 2
     f_x = width
     f_y = width
+
+    fps = 0
 
     fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
 
@@ -88,6 +91,20 @@ def display_image_with_pygame(image):
 
                     cv2.imwrite(filename, fisheye_image)
                     print(f"Image saved to {filename}")
+                if event.key == pygame.K_SPACE:
+                    recording = not recording;
+                    print(f"Recording: {recording}")
+                    if recording:
+                        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+                        print(f"fourcc: {fourcc}")
+
+                        output_path = f"{output_dir}/fisheye_{image_name}.mp4"
+
+                        video = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
+                        print(f"video {video} fps: {fps}")
+                    else:
+                        video.release()
+                        print(f"Recording stopped")
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_down = True
@@ -110,10 +127,6 @@ def display_image_with_pygame(image):
                     
                     last_mouse_x = event.pos[0]
                     last_mouse_y = event.pos[1]
-
-
-                    print(f" dy: {dy}, last_mouse_y: {last_mouse_y}, f_x: {f_x}")
-
                 else:
                     c_x = event.pos[1]
                     c_y = event.pos[0]
@@ -122,10 +135,19 @@ def display_image_with_pygame(image):
                 fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
                 image_rgb = cv2.cvtColor(fisheye_image, cv2.COLOR_BGR2RGB)
                 image_surface = pygame.surfarray.make_surface(image_rgb)
+                # calculate frames per second
+                fps = pygame.time.get_ticks() / 1000
+                if recording:
+                    result = video.write(fisheye_image)
+                    print(f"result: {result} fps: {fps}")
 
         screen.blit(image_surface, (0, 0))
 
         pygame.display.flip()
+
+    if recording:
+        video.release()
+        print(f"Recording stopped")
 
     pygame.quit()
     sys.exit()
