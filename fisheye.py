@@ -21,7 +21,7 @@ def apply_fisheye(image, c_x, c_y, f_x, f_y, strength=1.0):
 
     return fisheye_image
 
-def display_image_with_pygame(image):
+def main(input_path):
     """Displays an image using Pygame."""
 
     #split the path to get the filename
@@ -31,6 +31,35 @@ def display_image_with_pygame(image):
     input_dir = directory
     image_name = name
     image_ext = ext
+
+    is_video = True if image_ext.lower() == ".mp4" else False
+
+    # if input file is video
+    if is_video:
+        #open video for reading
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            print(f"Error: Unable to open video {input_path}")
+            return
+        # read the first frame
+        ret, image = cap.read()
+        if not ret:
+            cap.release()
+            print(f"Error: Unable to read video {input_path}")
+            return
+        
+    else:    
+        # Read the image
+        image = cv2.imread(input_path)
+        if image is None:
+            print(f"Error: Unable to load image {input_path}")
+            return
+
+        # set size of image. algorithem generates a square image
+        size = 1600
+
+        dim = (size, size)
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
     pygame.init()
     height, width = image.shape[:2]
@@ -64,11 +93,23 @@ def display_image_with_pygame(image):
     f_y = width
 
     fps = 0
+    regenerate = False
 
     fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
 
 
     while running:
+        if recording:
+            regenerate, new_image = cap.read()
+            if regenerate:
+                image = new_image
+
+            if not regenerate:
+                cap.release()
+                recording = False
+                print(f"End of video {input_path}")
+                break
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -96,15 +137,10 @@ def display_image_with_pygame(image):
                     print(f"Recording: {recording}")
                     if recording:
                         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-                        print(f"fourcc: {fourcc}")
-
                         output_path = f"{output_dir}/fisheye_{image_name}.mp4"
-
                         video = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
-                        print(f"video {video} fps: {fps}")
                     else:
                         video.release()
-                        print(f"Recording stopped")
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_down = True
@@ -114,6 +150,7 @@ def display_image_with_pygame(image):
                 if event.button == 1:  # Left mouse button
                     mouse_down = False
             elif event.type == pygame.MOUSEMOTION:
+                regenerate = True
                 if mouse_down:
                     dx = event.pos[0] - last_mouse_x
                     dy = event.pos[1] - last_mouse_y
@@ -131,15 +168,16 @@ def display_image_with_pygame(image):
                     c_x = event.pos[1]
                     c_y = event.pos[0]
 
-                # Regenerate the fisheye image with the new strength
-                fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
-                image_rgb = cv2.cvtColor(fisheye_image, cv2.COLOR_BGR2RGB)
-                image_surface = pygame.surfarray.make_surface(image_rgb)
-                # calculate frames per second
-                fps = pygame.time.get_ticks() / 1000
-                if recording:
-                    result = video.write(fisheye_image)
-                    print(f"result: {result} fps: {fps}")
+        if regenerate:
+            # Regenerate the fisheye image with the new strength
+            fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
+            image_rgb = cv2.cvtColor(fisheye_image, cv2.COLOR_BGR2RGB)
+            image_surface = pygame.surfarray.make_surface(image_rgb)
+            regenerate = False
+            # calculate frames per second
+            fps = pygame.time.get_ticks() / 1000
+            if recording:
+                video.write(fisheye_image)
 
         screen.blit(image_surface, (0, 0))
 
@@ -150,23 +188,7 @@ def display_image_with_pygame(image):
         print(f"Recording stopped")
 
     pygame.quit()
-    sys.exit()
-
-def main(image_path):
-    # Read the image
-    image = cv2.imread(image_path)
-    if image is None:
-        print(f"Error: Unable to load image {image_path}")
-        return
-
-    # set size of image. algorithem generates a square image
-    size = 1600
-
-    dim = (size, size)
-    image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-
-    # Display the transformed image using Pygame
-    display_image_with_pygame(image)
+    sys.exit() 
 
 if __name__ == "__main__":
     # get path from commandline if available
@@ -174,7 +196,7 @@ if __name__ == "__main__":
         input_path = sys.argv[1]
 
     else:
-        input_path = "input/Photos-001/PXL_20240724_165101814~3.jpg"  # Replace with the path to your image file
+        input_path = "input/GermanWheel.mp4"  # Replace with the path to your image file
 
     if len(sys.argv) > 2:
         output_dir = sys.argv[2]

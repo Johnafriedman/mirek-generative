@@ -358,7 +358,7 @@ class Controller(tk.Tk):
             return file_path
         
     def select_input_file(self):
-        files = [("PNG files", "*.png"), ("JPG files", "*.jpg")]
+        files = [("PNG files", "*.png"), ("JPG files", "*.jpg"), ("MP4 files", "*.mp4")]
         input_path = filedialog.askopenfilename(title="Select input File", filetypes=files, initialdir=self.model.input_dir)
         input_path = self.get_relative_or_absolute_path(input_path)
         self.model.input_path = input_path
