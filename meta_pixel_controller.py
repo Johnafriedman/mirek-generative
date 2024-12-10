@@ -12,6 +12,7 @@ from meta_pixel_view import do_meta_pixel
 # Model
 class Model:
     def __init__(self):
+        self.is_video = False
         self.create_pdf = False
         self.show_pdf = False
         self.show_image = True
@@ -70,7 +71,7 @@ class Model:
         self.image_name = 'Rhythms_Circle_DataReferenceSet_1982_2'
         self.image_ext = '.png'
         self.input_path = f"{self.input_dir}/{self.image_name}{self.image_ext}"
-        self.image_date = datetime.datetime.now().strftime('%Y%m%d')
+        self.image_date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
         # preference file name for saving and loading
         self.pref_file = 'meta_pixel.prefs'
@@ -168,9 +169,9 @@ class Controller(tk.Tk):
         self.entry_files.delete(0, tk.END)
         self.entry_files.insert(0, self.model.files)
 
-        self.var_create_pdf.set(self.model.create_pdf)
-        self.var_show_pdf.set(self.model.show_pdf)
-        self.var_show_image.set(self.model.show_image)
+        self.var_create_pdf = self.model.create_pdf
+        self.var_show_pdf = self.model.show_pdf
+        self.var_show_image = self.model.show_image
 
 
     def load_path_widgets(self):
@@ -265,16 +266,16 @@ class Controller(tk.Tk):
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
-        self.model.create_pdf = self.var_create_pdf.get()
+        self.model.create_pdf = self.var_create_pdf
         if self.model.create_pdf:
-            self.model.show_pdf = self.var_show_pdf.get()
+            self.model.show_pdf = self.var_show_pdf
             self.check_show_pdf.config(state="normal")    
         else:
             self.model.show_pdf = False
             self.check_show_pdf.deselect()
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
-        self.model.show_image = self.var_show_image.get()
+        self.model.show_image = self.var_show_image
 
     def store_mesh_widgets(self):
         self.model.do_mesh = self.var_do_mesh.get()
@@ -368,6 +369,12 @@ class Controller(tk.Tk):
         self.model.input_dir = directory
         self.model.image_name = name
         self.model.image_ext = ext
+        if ext.lower() == ".mp4":
+            self.model.is_video = True 
+            self.create_pdf = self.var_create_pdf = False
+            self.show_pdf = self.var_show_pdf = False
+            self.show_image = self.var_show_image = False
+
 
         self.entry_input_dir.delete(0, tk.END)
         self.entry_input_dir.insert(0, directory)
@@ -856,9 +863,9 @@ class Controller(tk.Tk):
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
-        image_window = ImageWindow(self, self.model.image, self.model)
-        self.windows.append(image_window)
-        image_window.open()
+        # image_window = ImageWindow(self, self.model.image, self.model)
+        # self.windows.append(image_window)
+        # image_window.open()
         self.button_generate.config(state="normal")
 
     def fisheye(self):

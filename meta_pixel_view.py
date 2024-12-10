@@ -115,11 +115,33 @@ def do_mesh_transform(model, image):
 
 def meta_pixel(m, pdf_canvas):
 
-  for file in range(0, m.files):
+  # if m.is_video: open the input file for reading and read the first frame
+  if m.is_video:
+    cap = cv2.VideoCapture(m.input_path)
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if not cap.isOpened():
+      print(f"Error: Unable to open video {m.input_path}")
+      return
+    # also open the output video for writing
+    video_output_filename = f"{m.output_dir}/{m.image_name}_{m.image_date}.mp4"
+    video_out = cv2.VideoWriter(video_output_filename, cv2.VideoWriter_fourcc(*'MJPG'), 20.0, (int(cap.get(3)),int(cap.get(4))))
 
+  files = frames if m.is_video else m.files
+
+  for file in range(0, files):
+    print(f"Processing frame {file} of {files}")
     # Open the image
-    image = Image.open(m.input_path)
-    image = image.convert('RGBA')
+    if m.is_video:
+      ret, image = cap.read()
+      if not ret:
+        cap.release()
+        print(f"Error: Unable to read video {m.input_path}")
+        return
+      # convert to PIL image
+      image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
+    else:
+      image = Image.open(m.input_path)
+      image = image.convert('RGBA')
 
     min_width = image.width * m.min_width_percentage
     min_height = image.height * m.min_height_percentage
@@ -138,7 +160,6 @@ def meta_pixel(m, pdf_canvas):
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
     for _ in range(0, m.max_layers):
-
 
       # Apply the mesh transform
       if m.do_mesh:
@@ -201,21 +222,42 @@ def meta_pixel(m, pdf_canvas):
           
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
-    m.image = image
-    if m.create_pdf:
-      m.image.save(filename)
+    if m.is_video:
+       # try to write the frame to the output video, handle exceptions
+      try:
+        frame = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGR)
+        video_out.write(frame)
+      except Exception as e:
+        print(f"Error writing frame to video: {e}")
+        break
 
-    if m.show_image:
-      image.show(filename)
+    else:
+      m.image = image
+      if m.create_pdf:
+        m.image.save(filename)
 
-    if m.create_pdf:
-      # Add a new page to the PDF with the same size as the image
-      pdf_canvas.setPageSize((image.width, image.height))
+      if m.show_image:
+        image.show(filename)
 
-      # Add the image to the PDF
-      pdf_canvas.drawImage(filename, 0, 0, preserveAspectRatio=True, width=image.width, height=image.height)
+      if m.create_pdf:
+        # Add a new page to the PDF with the same size as the image
+        pdf_canvas.setPageSize((image.width, image.height))
 
-      pdf_canvas.showPage()
+        # Add the image to the PDF
+        pdf_canvas.drawImage(filename, 0, 0, preserveAspectRatio=True, width=image.width, height=image.height)
+
+        pdf_canvas.showPage()
+  
+  if m.is_video:
+    try:
+      video_out.release()
+      cap.release()
+      print(f"Video saved to {video_output_filename}")
+    except Exception as e:
+      print(f"Error releasing video: {e}")
+
+
+
 
 def do_meta_pixel(m):
   if m.create_pdf:      
