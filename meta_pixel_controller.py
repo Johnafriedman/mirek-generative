@@ -115,6 +115,7 @@ class Controller(tk.Tk):
             self.load_all_widgets()
 
 
+
         self.update_idletasks()
         self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{self.winfo_x()}+{self.winfo_y()}")
 
@@ -164,14 +165,19 @@ class Controller(tk.Tk):
     #
     # Load Widgets from Model
     # 
-
     def load_output_options_widgets(self):
         self.entry_files.delete(0, tk.END)
         self.entry_files.insert(0, self.model.files)
 
-        self.var_create_pdf = self.model.create_pdf
-        self.var_show_pdf = self.model.show_pdf
-        self.var_show_image = self.model.show_image
+        self.var_create_pdf.set(self.model.create_pdf)
+        self.var_show_pdf.set(self.model.show_pdf)
+        self.var_show_image.set(self.model.show_image)
+    def load_output_options_widgets(self):
+        self.entry_files.delete(0, tk.END)
+        self.entry_files.insert(0, self.model.files)
+        self.var_create_pdf.set(self.model.create_pdf)
+        self.var_show_pdf.set(self.model.show_pdf)
+        self.var_show_image.set(self.model.show_image)
 
 
     def load_path_widgets(self):
