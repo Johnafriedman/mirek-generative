@@ -253,6 +253,8 @@ def meta_pixel(m, pdf_canvas):
       video_out.release()
       cap.release()
       print(f"Video saved to {video_output_filename}")
+      os.system(f"open {video_output_filename}")
+
     except Exception as e:
       print(f"Error releasing video: {e}")
 
