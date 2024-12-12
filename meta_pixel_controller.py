@@ -99,12 +99,6 @@ class Controller(tk.Tk):
         self.windows = []
 
 
-        # if preference file exists, load it
-        if os.path.exists(self.model.pref_file):
-            self.model.load()
-            self.load_all_widgets()
-
-
         # Create the main content frame
         self.content_frame = tk.Frame(self, bg="lightgrey")
         self.content_frame.grid(row=0, column=0, sticky="nsew")
@@ -114,6 +108,12 @@ class Controller(tk.Tk):
         self.grid_columnconfigure(0, weight=1)
 
         self.init_all_frames()
+
+        # if preference file exists, load it
+        if os.path.exists(self.model.pref_file):
+            self.model.load()
+            self.load_all_widgets()
+
 
         self.update_idletasks()
         self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{self.winfo_x()}+{self.winfo_y()}")
@@ -266,16 +266,16 @@ class Controller(tk.Tk):
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
-        self.model.create_pdf = self.var_create_pdf
+        self.model.create_pdf = self.var_create_pdf.get()
         if self.model.create_pdf:
-            self.model.show_pdf = self.var_show_pdf
+            self.model.show_pdf = self.var_show_pdf.get()
             self.check_show_pdf.config(state="normal")    
         else:
             self.model.show_pdf = False
             self.check_show_pdf.deselect()
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
-        self.model.show_image = self.var_show_image
+        self.model.show_image = self.var_show_image.get()
 
     def store_mesh_widgets(self):
         self.model.do_mesh = self.var_do_mesh.get()
