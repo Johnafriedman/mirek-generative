@@ -32,7 +32,7 @@ def main(input_path):
     image_name = name
     image_ext = ext
 
-    is_video = True if image_ext.lower() == ".mp4" else False
+    is_video = image_ext.lower() in [".mp4", ".mov"]
 
     # if input file is video
     if is_video:
