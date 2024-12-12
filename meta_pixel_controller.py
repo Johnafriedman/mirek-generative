@@ -359,7 +359,7 @@ class Controller(tk.Tk):
             return file_path
         
     def select_input_file(self):
-        files = [("PNG files", "*.png"), ("JPG files", "*.jpg"), ("MP4 files", "*.mp4")]
+        files = [("Image files", ".png .jpeg .jpg"), ("Video files", ".mp4 .mov")]
         input_path = filedialog.askopenfilename(title="Select input File", filetypes=files, initialdir=self.model.input_dir)
         input_path = self.get_relative_or_absolute_path(input_path)
         self.model.input_path = input_path
@@ -369,7 +369,7 @@ class Controller(tk.Tk):
         self.model.input_dir = directory
         self.model.image_name = name
         self.model.image_ext = ext
-        if ext.lower() == ".mp4":
+        if ext.lower() == ".mp4" or ext.lower() == ".mov":
             self.model.is_video = True 
             self.create_pdf = self.var_create_pdf = False
             self.show_pdf = self.var_show_pdf = False
@@ -857,9 +857,11 @@ class Controller(tk.Tk):
             self.draw_gradient(self.__dict__[f"{type}_canvas_gradient"], self.model.__dict__[f"{type}_color"][0], self.model.__dict__[f"{type}_color"][1])
             print(self.model.__dict__[f"{type}_color"][index])
 
+    def set_image_date(self):
+        self.model.image_date = datetime.datetime.now().strftime("%Y-%m-%d%H%M%S")
     def generate(self):
         self.store_all_widgets()
-        
+        self.set_image_date()
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
@@ -870,6 +872,8 @@ class Controller(tk.Tk):
 
     def fisheye(self):
         self.store_all_widgets()
+        self.set_image_date()
+
         # execute fisheye.py in the terminal with commandline parameters        
         # Functionality to generate fisheye
         self.button_fisheye.config(state="disabled")
