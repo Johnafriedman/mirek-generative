@@ -233,8 +233,7 @@ def meta_pixel(m, pdf_canvas):
 
     else:
       m.image = image
-      if m.create_pdf:
-        m.image.save(filename)
+      m.image.save(filename)
 
       if m.show_image:
         image.show(filename)
