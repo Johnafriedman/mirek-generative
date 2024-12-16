@@ -883,7 +883,7 @@ class Controller(tk.Tk):
         # execute fisheye.py in the terminal with commandline parameters        
         # Functionality to generate fisheye
         self.button_fisheye.config(state="disabled")
-        subprocess.Popen(["python", "mirek-generative/fisheye.py", self.model.input_path, self.model.output_dir])
+        subprocess.Popen(["python", "./mirek-generative/fisheye.py", self.model.input_path, self.model.output_dir])
         self.button_fisheye.config(state="normal")
 
     def exit(self):
