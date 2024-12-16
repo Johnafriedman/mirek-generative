@@ -350,6 +350,8 @@ class Controller(tk.Tk):
         self.button_input_select.grid(row=0, column=3, padx=10, pady=0, sticky="ew")
 
     def get_relative_or_absolute_path(self, file_path):
+        if not file_path:
+            return file_path
         try:
             # Get the absolute path of the file
             absolute_path = os.path.abspath(file_path)
@@ -367,6 +369,8 @@ class Controller(tk.Tk):
     def select_input_file(self):
         files = [("Image files", ".png .jpeg .jpg"), ("Video files", ".mp4 .mov")]
         input_path = filedialog.askopenfilename(title="Select input File", filetypes=files, initialdir=self.model.input_dir)
+        if not input_path:
+            return
         input_path = self.get_relative_or_absolute_path(input_path)
         self.model.input_path = input_path
         directory, name = os.path.split(input_path)
