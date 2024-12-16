@@ -185,7 +185,9 @@ def meta_pixel(m, pdf_canvas):
     edges = findEdges(image, m.edge_min, m.edge_max, m.edge_aperture)
     edge_pixel_cnt = int(len(edges))
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
-    start = int(edge_pixel_cnt % edge_increment)
+    # start = int(edge_pixel_cnt % edge_increment)
+    start = random.randint(0, edge_increment)
+    print(f"Edge pixels: {edge_pixel_cnt}, increment: {edge_increment}, start: {start}")
 
     if len(edges) > 0:
       clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
