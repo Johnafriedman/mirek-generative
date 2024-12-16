@@ -20,10 +20,10 @@ import cv2
 from transforms import create_randomized_aligned_mesh
 
 from constants import *
-from utilities import make_transparent, transformed_shape, bounding_box_size, random_color
+from utilities import make_transparent, transformed_shape, transformed_centroid, bounding_box_size, random_color
 
 
-def visualizeClusters(image, clusters):
+def visualizeClusters(m, image, clusters):
     """
     Visualize clusters of points on the image.
 
@@ -31,6 +31,11 @@ def visualizeClusters(image, clusters):
     - image: The input image.
     - clusters: A list of clusters, where each cluster is a list of points.
     """
+    def calculate_centroid_and_radius(cluster):
+        centroid = np.mean(cluster, axis=0).astype(int)
+        distances = np.linalg.norm(cluster - centroid, axis=1)
+        return (centroid, int(np.max(distances)))
+
     output_image = image.copy()
     draw = ImageDraw.Draw(output_image)
 
@@ -39,6 +44,9 @@ def visualizeClusters(image, clusters):
     
     # Calculate the maximum cluster size for normalization
     max_cluster_size = max(len(cluster) for cluster in clusters)
+
+    # sort the clusters by radius largest to smallest
+    clusters = sorted(clusters, key=lambda x: calculate_centroid_and_radius(x)[1], reverse=True)
 
     for cluster in clusters:
         # Calculate luminance based on the size of the cluster
@@ -53,8 +61,27 @@ def visualizeClusters(image, clusters):
         distances = np.linalg.norm(cluster - centroid, axis=1)
         radius = int(np.max(distances))
 
+        transforms = []
+        if m.do_scale: transforms.append({"name":"scale", "scale_factor": m.scale_factor})
+        if m.do_blur: transforms.append({"name":"blur", "radius": m.blur_radius})
+        if m.do_invert: transforms.append({"name":"invert"})  
+
         # Draw the circle around the cluster
         draw.ellipse((centroid[1] - radius, centroid[0] - radius, centroid[1] + radius, centroid[0] + radius), outline=color, width=2)
+
+        (out, mask) = transformed_centroid(
+              image=image,
+              x=centroid[1],
+              y=centroid[0],
+              width=radius*2,
+              height=radius*2,
+              fill=random_color(vars(m), "fill"),
+              outline=random_color(vars(m), "outline"),
+              outline_width=2,
+              transforms=transforms
+          )
+        
+        output_image.paste(out, (centroid[1]-radius, centroid[0]-radius), mask)
 
     return output_image
 
@@ -159,6 +186,11 @@ def meta_pixel(m, pdf_canvas):
     edge_pixel_cnt = int(len(edges))
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     start = int(edge_pixel_cnt % edge_increment)
+
+    if len(edges) > 0:
+      clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
+      image = visualizeClusters(m, image, clusters)
+
     for _ in range(0, m.max_layers):
 
       # Apply the mesh transform
@@ -216,9 +248,9 @@ def meta_pixel(m, pdf_canvas):
       #   filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
       #   overlay.save(filename)
 
-    if len(edges) > 0:
-      clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
-      image = visualizeClusters(image, clusters)
+    # if len(edges) > 0:
+    #   clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
+    #   image = visualizeClusters(m, image, clusters)
           
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 

@@ -11,6 +11,64 @@ from screeninfo import get_monitors
 
 from constants import GOLDEN_RATIO
 
+def transformed_centroid(image, x, y, width, height, fill, outline, outline_width, transforms = [],do_transform=True):
+
+  
+  shape = "ellipse"
+
+  transform = transforms[int(random.uniform(0,len(transforms)))]
+  # Create a image mask for the cropped image
+
+
+  mask = Image.new('L', (width, height), 0)
+
+# Create a draw object for the mask
+  draw = ImageDraw.Draw(mask)
+
+  # Define the bounding box for the ellipse
+  bounding_box = (0, 0, width, height)  # Adjust as needed
+
+  # do_transform = random.random() < prob_do_transform
+
+  # Draw the shape on the mask (white color fills the ellipse)
+  # adjust the fill it is 8 if the width is greater than 90% of the image width and 255 if width is less than 10% of the image width
+  if width > .9*image.width:
+    mask_fill = 8
+  elif width < .1*image.width:
+    mask_fill = 255
+  # otherwise it varies smoothly between 8 and 255
+  else:
+    mask_fill = int(8 + (255-8)*(width/image.width))
+
+
+  getattr(draw, shape)(bounding_box, mask_fill)
+
+  # Apply the mask to the image  
+  cropped = image.crop((x-width/2,y-height/2,x+width/2,y+height/2))
+
+
+  if transform['name'] == 'blur':
+    transformed_image = cropped.filter(ImageFilter.GaussianBlur(transform['radius']))
+  elif transform['name'] == 'invert':
+    red, green, blue, alpha = cropped.split()
+    transformed_image = Image.merge('RGBA', (invert(red), invert(green), invert(blue), alpha))
+  elif transform['name'] == "scale":
+    scale_factor =  int(random.uniform(2, transform['scale_factor']))
+    scaled = scale(cropped, scale_factor, Image.NEAREST)
+    transformed_image = scaled.crop((0,0,width,height))
+  else:
+    transformed_image = cropped
+
+
+  overlay = Image.new('RGBA', cropped.size, (0,0,0,0))
+  draw = ImageDraw.Draw(overlay)    
+  getattr(draw, shape)(bounding_box, fill, outline, outline_width)
+
+  transformed_image = Image.alpha_composite(transformed_image, overlay)
+
+# return the blurred image
+  return(transformed_image, mask)
+
 
 def transformed_shape(image, x, y, width, height, fill, outline, outline_width, transforms = [], shapes=["ellipse","rectangle"],do_transform=True):
 
