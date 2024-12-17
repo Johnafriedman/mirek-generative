@@ -12,6 +12,9 @@ from meta_pixel_view import do_meta_pixel
 # Model
 class Model:
     def __init__(self):
+
+        self._initialized = False
+
         self.is_video = False
         self.create_pdf = False
         self.show_pdf = False
@@ -75,6 +78,18 @@ class Model:
 
         # preference file name for saving and loading
         self.pref_file = 'meta_pixel.prefs'
+        self._initialized = True
+        self._existing_attributes = set(self.__dict__.keys())
+
+
+        # Override __setattr__ at runtime
+        self.__setattr__ = self.custom_setattr
+
+    def custom_setattr(self, name, value):
+        if self._initialized and not hasattr(self, name):
+            print(f"New attribute added: {name}")
+        super(Model, self).__setattr__(name, value)
+        self._existing_attributes.add(name)
 
     def load(self):
 
@@ -86,7 +101,11 @@ class Model:
     def save(self):
         with open(self.pref_file, 'w') as f:
             data = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
-            json.dump(data, f, indent=4)
+            try:
+                json.dump(data, f, indent=4)
+            except Exception as e:
+                print(f"Error saving preferences: {e}")
+                print(f"Data: {data}")
 
 
 class Controller(tk.Tk):
@@ -875,7 +894,7 @@ class Controller(tk.Tk):
         # Functionality to generate meta pixel
         self.button_generate.config(state="disabled")
         do_meta_pixel(self.model)
-        # image_window = ImageWindow(self, self.model.image, self.model)
+        # image_window = ImageWindow(self, self.model._image, self.model)
         # self.windows.append(image_window)
         # image_window.open()
         self.button_generate.config(state="normal")

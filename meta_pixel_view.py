@@ -187,7 +187,6 @@ def meta_pixel(m, pdf_canvas):
     edge_increment = int((edge_pixel_cnt) / m.shapes) if edge_pixel_cnt else 1
     # start = int(edge_pixel_cnt % edge_increment)
     start = random.randint(0, edge_increment)
-    print(f"Edge pixels: {edge_pixel_cnt}, increment: {edge_increment}, start: {start}")
 
     if len(edges) > 0:
       clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
@@ -266,8 +265,8 @@ def meta_pixel(m, pdf_canvas):
         break
 
     else:
-      m.image = image
-      m.image.save(filename)
+      m._image = image
+      m._image.save(filename)
 
       if m.show_image:
         image.show(filename)
