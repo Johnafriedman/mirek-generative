@@ -75,7 +75,7 @@ def visualizeClusters(m, image, clusters):
               y=centroid[0],
               width=radius*2,
               height=radius*2,
-              fill=random_color(vars(m), "fill"),
+              fill=random_color(vars(m), "cluster"),
               outline=random_color(vars(m), "outline"),
               outline_width=2,
               transforms=transforms

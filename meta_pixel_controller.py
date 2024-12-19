@@ -68,6 +68,7 @@ class Model:
         self.fill_color = [(255,255,64,128),(192,128,32,32)]
         self.accent_color = [(255,16,16,212),(192,192,0,192)]
         self.outline_color = [(255,255,255,255),(128,0,0,0)]
+        self.cluster_color = [(255,255,64,128),(192,128,32,32)]
 
         self.input_dir = 'input'
         self.output_dir = 'output'
@@ -278,6 +279,7 @@ class Controller(tk.Tk):
         self.draw_gradient(self.__dict__["fill_canvas_gradient"], self.model.fill_color[0], self.model.fill_color[1])
         self.draw_gradient(self.__dict__["outline_canvas_gradient"], self.model.outline_color[0], self.model.outline_color[1])
         self.draw_gradient(self.__dict__["accent_canvas_gradient"], self.model.accent_color[0], self.model.accent_color[1])
+        self.draw_gradient(self.__dict__["cluster_canvas_gradient"], self.model.cluster_color[0], self.model.cluster_color[1])
 
     #
     # Store Widgets in Model 
@@ -842,6 +844,12 @@ class Controller(tk.Tk):
         self.init_color_widget(self.color_sub_frame1, 2, 0, "accent", 0)
         self.initialize_gradient_widgets(self.color_sub_frame1, 2, 2, "accent")
         self.init_color_widget(self.color_sub_frame1, 2, 2, "accent", 1)
+
+        # initialize the cluster color widgets
+        self.init_color_widget(self.color_sub_frame1, 3, 0, "cluster", 0)
+        self.initialize_gradient_widgets(self.color_sub_frame1, 3, 2, "cluster")
+        self.init_color_widget(self.color_sub_frame1, 3, 2, "cluster", 1)
+
     
     def initialize_gradient_widgets(self, frame, row, column, type):
         smd = self.model.__dict__
