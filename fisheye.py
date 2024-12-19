@@ -99,7 +99,7 @@ def main(input_path):
 
 
     while running:
-        if recording:
+        if is_video:
             regenerate, new_image = cap.read()
             if regenerate:
                 image = new_image
