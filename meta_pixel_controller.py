@@ -147,6 +147,7 @@ class Controller(tk.Tk):
         self.init_file_frame()
         self.init_output_options_frame()
         self.init_mesh_frame()
+        self.init_perspective_frame()
         self.init_shapes_frame()
         self.init_analysis_frame()
         self.init_color_frame()
@@ -156,6 +157,7 @@ class Controller(tk.Tk):
         self.load_path_widgets()
         self.load_output_options_widgets()
         self.load_mesh_widgets()
+        self.load_perspective_widgets()
         self.load_shapes_widgets()
         self.load_analsys_widgets()
         self.load_color_widgets()
@@ -165,6 +167,7 @@ class Controller(tk.Tk):
         self.store_path_widgets()
         self.store_output_options_widgets()
         self.store_mesh_widgets()
+        self.store_perspective_widgets()
         self.store_shapes_widgets()
         self.store_analysis_widgets()
         self.store_color_widgets()
@@ -257,6 +260,11 @@ class Controller(tk.Tk):
         self.entry_max_mesh_height.delete(0, tk.END)
         self.entry_max_mesh_height.insert(0, self.model.max_mesh_height)
 
+    def load_perspective_widgets(self):
+        self.var_do_perspective.set(self.model.do_perspective)
+        self.var_use_mask.set(self.model.use_mask)
+
+
     def load_analsys_widgets(self):
         self.entry_edge_min.delete(0, tk.END)
         self.entry_edge_min.insert(0, self.model.edge_min)
@@ -322,6 +330,16 @@ class Controller(tk.Tk):
             self.check_use_mask.config(state="disabled")
             self.entry_max_mesh_width.config(state="disabled")
             self.entry_max_mesh_height.config(state="disabled")
+
+    def store_perspective_widgets(self):
+        self.model.do_perspective = self.var_do_perspective.get()
+        if self.model.do_perspective:
+            self.check_use_mask.config(state="normal")
+            self.model.use_mask = self.var_use_mask.get()
+        else:
+            # disable the remaining perspective widgets
+            self.check_use_mask.config(state="disabled")
+
 
 
     def store_shapes_widgets(self):
@@ -541,7 +559,31 @@ class Controller(tk.Tk):
         self.entry_max_mesh_height = tk.Entry(self.mesh_frame)
         self.entry_max_mesh_height.grid(row=0, column=6, padx=0, pady=0, sticky="ew")
         self.entry_max_mesh_height.insert(0, self.model.max_mesh_height)
-    
+
+    def init_perspective_frame(self):
+        # Create a frame for perspective
+        self.perspective_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
+        self.perspective_frame.grid(row=5, column=0, padx=10, pady=10, sticky="nsew")
+
+        # Configure grid weights for the perspective frame
+        self.perspective_frame.grid_rowconfigure(0, weight=1)
+        for i in range(6):
+            self.perspective_frame.grid_columnconfigure(i, weight=1)
+
+        self.init_perspective_widgets()
+
+    def init_perspective_widgets(self):
+
+        # Checkbutton for do_perspective
+        self.var_do_perspective = tk.BooleanVar(value=self.model.do_perspective)
+        self.check_do_perspective = tk.Checkbutton(self.perspective_frame, text="perspective", variable=self.var_do_perspective, command=self.store_perspective_widgets)
+        self.check_do_perspective.grid(row=0, column=1, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for use_mask
+        self.var_use_mask = tk.BooleanVar(value=self.model.use_mask)
+        self.check_use_mask = tk.Checkbutton(self.perspective_frame, text="Mask", variable=self.var_use_mask)
+        self.check_use_mask.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+
     def init_shapes_frame(self):
         # Create a frame for shapes
         self.shapes_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
