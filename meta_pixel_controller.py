@@ -27,6 +27,9 @@ class Model:
         self.max_mesh_width = 4
         self.max_mesh_height = 6
 
+        # perspective transform
+        self.do_perspective = True
+
         self.max_layers = 2
         self.max_shape_layers = 2
         self.shapes = 2**7
@@ -68,7 +71,8 @@ class Model:
         self.fill_color = [(255,255,64,128),(192,128,32,32)]
         self.accent_color = [(255,16,16,212),(192,192,0,192)]
         self.outline_color = [(255,255,255,255),(128,0,0,0)]
-        self.cluster_color = [(255,255,64,128),(192,128,32,32)]
+        self.cluster_color = [(65, 102, 224, 46), (168, 187, 242, 32)]
+
 
         self.input_dir = 'input'
         self.output_dir = 'output'

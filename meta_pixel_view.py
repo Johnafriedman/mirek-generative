@@ -140,6 +140,26 @@ def do_mesh_transform(model, image):
         #draw the transformed image on the original using a mask
         return (out, mask)
 
+def do_perspective_transform(model, image):
+        m = model
+        # convert the image to cv2 format
+        cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+        # create a random perspective transform
+        rows, cols, ch = cv2_image.shape
+        pts1 = np.float32([[0, 0], [cols, 0], [0, rows], [cols, rows]])
+        pts2 = np.float32([[random.uniform(0, cols), random.uniform(0, rows)],
+                           [random.uniform(0, cols), random.uniform(0, rows)],
+                           [random.uniform(0, cols), random.uniform(0, rows)],
+                           [random.uniform(0, cols), random.uniform(0, rows)]])
+        M = cv2.getPerspectiveTransform(pts1, pts2)
+        # apply the perspective transform
+        out = cv2.warpPerspective(cv2_image, M, (cols, rows))
+        # convert the transformed image back to PIL format
+        out = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGRA2RGBA))
+        mask = out if m.use_mask else None
+        #draw the transformed image on the original using a mask
+        return (out, mask)
+
 def meta_pixel(m, pdf_canvas):
 
   # if m.is_video: open the input file for reading and read the first frame
@@ -200,7 +220,12 @@ def meta_pixel(m, pdf_canvas):
         out, mask = do_mesh_transform(m, im)
         image.paste(out, None, mask)
 
-
+      # Apply the perspective transform
+      if m.do_perspective:
+        im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
+        out, mask = do_perspective_transform(m, im)
+        image.paste(out, None, mask)
+        
       # Create a new image with the mesh
       # if m.save_layer_images:
       #   overlay = Image.new('RGBA', (image.width, image.height), (0, 0, 0, 0))
