@@ -305,24 +305,24 @@ class Controller(tk.Tk):
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
-        self.model.create_pdf = self.var_create_pdf.get()
+        self.model.create_pdf = self.var_create_pdf
         if self.model.create_pdf:
-            self.model.show_pdf = self.var_show_pdf.get()
+            self.model.show_pdf = self.var_show_pdf
             self.check_show_pdf.config(state="normal")    
         else:
             self.model.show_pdf = False
             self.check_show_pdf.deselect()
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
-        self.model.show_image = self.var_show_image.get()
+        self.model.show_image = self.var_show_image
 
     def store_mesh_widgets(self):
-        self.model.do_mesh = self.var_do_mesh.get()
+        self.model.do_mesh = self.var_do_mesh
         if self.model.do_mesh:
             self.check_use_mask.config(state="normal")
             self.entry_max_mesh_width.config(state="normal")
             self.entry_max_mesh_height.config(state="normal")
-            self.model.use_mask = self.var_use_mask.get()
+            self.model.use_mask = self.var_use_mask
             self.model.max_mesh_width = int(self.entry_max_mesh_width.get())
             self.model.max_mesh_height = int(self.entry_max_mesh_height.get())
         else:
@@ -346,11 +346,11 @@ class Controller(tk.Tk):
         self.model.shapes = int(self.entry_shapes.get())
         self.model.max_layers = int(self.entry_max_layers.get())
         self.model.max_shape_layers = int(self.entry_max_shape_layers.get())
-        self.model.do_blur = self.var_do_blur.get()
+        self.model.do_blur = self.var_do_blur
         self.model.blur_radius = int(self.entry_blur_radius.get())
-        self.model.do_scale = self.var_do_scale.get()
+        self.model.do_scale = self.var_do_scale
         self.model.scale_factor = int(self.entry_scale_factor.get())
-        self.model.do_invert = self.var_do_invert.get()
+        self.model.do_invert = self.var_do_invert
 
     def store_analysis_widgets(self):
         self.model.edge_min = int(self.entry_edge_min.get())
@@ -365,7 +365,7 @@ class Controller(tk.Tk):
         self.model.accent_color_percentage = self.scale_accent_color_percentage.get()
 
         # self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
-        self.model.transparent_above = self.var_transparent_above.get()
+        self.model.transparent_above = self.var_transparent_above
 
 # 
 # Initialize the frames
