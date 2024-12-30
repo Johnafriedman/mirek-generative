@@ -35,7 +35,7 @@ def images_to_mp4(directory, mp4_file, fps=25, steps_per_frame=25):
     num_pages = len(files)
 
     # Create a video writer
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     video = cv2.VideoWriter(mp4_file, fourcc, fps, (width, height))
 
     # Loop through the pages
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     # Define the arguments
 
     args = {
-        'directory': 'output/meta-pixel_IMG_8905_2024-12-29125320',
-        'mp4_file': 'output/IMG_8905.mp4',
+        'directory': 'output/meta-pixel_IMG_0762_2024-12-30154950',
+        'mp4_file': 'output/IMG_0762.mp4',
         'fps': 12,
         'steps_per_frame': 32
     }
