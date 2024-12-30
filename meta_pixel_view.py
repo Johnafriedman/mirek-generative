@@ -171,7 +171,7 @@ def meta_pixel(m, pdf_canvas):
       return
     # also open the output video for writing
     video_output_filename = f"{m.output_dir}/{m.image_name}_{m.image_date}.mp4"
-    video_out = cv2.VideoWriter(video_output_filename, cv2.VideoWriter_fourcc(*'MJPG'), 20.0, (int(cap.get(3)),int(cap.get(4))))
+    video_out = cv2.VideoWriter(video_output_filename, cv2.VideoWriter_fourcc(*'avc1'), 20.0, (int(cap.get(3)),int(cap.get(4))))
 
   files = frames if m.is_video else m.files
 

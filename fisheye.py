@@ -136,7 +136,7 @@ def main(input_path):
                     recording = not recording;
                     print(f"Recording: {recording}")
                     if recording:
-                        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+                        fourcc = cv2.VideoWriter_fourcc(*'avc1')
                         output_path = f"{output_dir}/fisheye_{image_name}_{image_date}.mp4"
                         print(f"Recording to {output_path}")
                         video = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
