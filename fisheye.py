@@ -56,7 +56,7 @@ def main(input_path):
             return
 
         # set size of image. algorithem generates a square image
-        size = 1600
+        size = min(image.shape[:2])
 
         dim = (size, size)
         image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
