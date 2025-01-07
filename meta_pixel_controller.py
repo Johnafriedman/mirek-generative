@@ -22,13 +22,13 @@ class Model:
         self._image = None
 
         # mesh
-        self.do_mesh = True
+        self.do_mesh = False
         self.use_mask = True
         self.max_mesh_width = 4
         self.max_mesh_height = 6
 
         # perspective transform
-        self.do_perspective = True
+        self.do_perspective = False
 
         self.max_layers = 2
         self.max_shape_layers = 2
@@ -192,13 +192,7 @@ class Controller(tk.Tk):
     #
     # Load Widgets from Model
     # 
-    def load_output_options_widgets(self):
-        self.entry_files.delete(0, tk.END)
-        self.entry_files.insert(0, self.model.files)
 
-        self.var_create_pdf.set(self.model.create_pdf)
-        self.var_show_pdf.set(self.model.show_pdf)
-        self.var_show_image.set(self.model.show_image)
     def load_output_options_widgets(self):
         self.entry_files.delete(0, tk.END)
         self.entry_files.insert(0, self.model.files)
@@ -305,19 +299,19 @@ class Controller(tk.Tk):
 
     def store_output_options_widgets(self):
         self.model.files = int(self.entry_files.get())
-        self.model.create_pdf = self.var_create_pdf
+        self.model.create_pdf = self.var_create_pdf.get()
         if self.model.create_pdf:
-            self.model.show_pdf = self.var_show_pdf
+            self.model.show_pdf = self.var_show_pdf.set(True)
             self.check_show_pdf.config(state="normal")    
         else:
             self.model.show_pdf = False
             self.check_show_pdf.deselect()
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
-        self.model.show_image = self.var_show_image
+        self.model.show_image = self.var_show_image.get()
 
     def store_mesh_widgets(self):
-        self.model.do_mesh = self.var_do_mesh
+        self.model.do_mesh = self.var_do_mesh.get()
         if self.model.do_mesh:
             self.check_use_mask.config(state="normal")
             self.entry_max_mesh_width.config(state="normal")
@@ -346,11 +340,11 @@ class Controller(tk.Tk):
         self.model.shapes = int(self.entry_shapes.get())
         self.model.max_layers = int(self.entry_max_layers.get())
         self.model.max_shape_layers = int(self.entry_max_shape_layers.get())
-        self.model.do_blur = self.var_do_blur
+        self.model.do_blur = self.var_do_blur.get()
         self.model.blur_radius = int(self.entry_blur_radius.get())
-        self.model.do_scale = self.var_do_scale
+        self.model.do_scale = self.var_do_scale.get()
         self.model.scale_factor = int(self.entry_scale_factor.get())
-        self.model.do_invert = self.var_do_invert
+        self.model.do_invert = self.var_do_invert.get()
 
     def store_analysis_widgets(self):
         self.model.edge_min = int(self.entry_edge_min.get())
@@ -365,7 +359,7 @@ class Controller(tk.Tk):
         self.model.accent_color_percentage = self.scale_accent_color_percentage.get()
 
         # self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
-        self.model.transparent_above = self.var_transparent_above
+        self.model.transparent_above = self.var_transparent_above.get()
 
 # 
 # Initialize the frames
@@ -424,9 +418,9 @@ class Controller(tk.Tk):
         self.model.image_ext = ext
         if ext.lower() == ".mp4" or ext.lower() == ".mov":
             self.model.is_video = True 
-            self.create_pdf = self.var_create_pdf = False
-            self.show_pdf = self.var_show_pdf = False
-            self.show_image = self.var_show_image = False
+            self.create_pdf = self.var_create_pdf.set(False)
+            self.show_pdf = self.var_show_pdf.set(False)
+            self.show_image = self.var_show_image.set(False)
 
 
         self.entry_input_dir.delete(0, tk.END)
