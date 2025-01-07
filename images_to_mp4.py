@@ -11,7 +11,7 @@ def process_frame(video, start_img, end_img, steps_per_frame):
         img = cv2.addWeighted(start_img, 1 - alpha, end_img, alpha, 0)
 
         # display the image
-        cv2.imshow('image', img)
+        # cv2.imshow('image', img)
 
         # Write the image to the video
         video.write(img)
@@ -26,6 +26,8 @@ def images_to_mp4(directory, mp4_file, fps=25, steps_per_frame=25):
 
     # Get a list of the files in the directory
     files = os.listdir(directory)
+    # remove any system files
+    files = [f for f in files if not f.startswith('.')]
     start_path = os.path.join(directory, files[0])
     first_img = start_img = cv2.imread(start_path)
     # Get the height and width of the images
@@ -40,10 +42,10 @@ def images_to_mp4(directory, mp4_file, fps=25, steps_per_frame=25):
 
     # Loop through the pages
     for i in range(1, num_pages):
-        print(f'Processing page {i+1}/{num_pages}')
         # Get the path of the next image
         end_path = os.path.join(directory, files[i])
         end_img = cv2.imread(end_path)
+        print(f'Processing page {i+1}/{num_pages} {start_path} -> {end_path}')
 
         # Process the frames
         process_frame(video, start_img, end_img, steps_per_frame)
@@ -62,8 +64,8 @@ if __name__ == '__main__':
     # Define the arguments
 
     args = {
-        'directory': 'output/meta-pixel_IMG_0762_2024-12-30154950',
-        'mp4_file': 'output/IMG_0762.mp4',
+        'directory': 'output/meta-pixel_IMG_1069_2025-01-07_27',
+        'mp4_file': 'output/IMG_1069.mp4',
         'fps': 12,
         'steps_per_frame': 32
     }
