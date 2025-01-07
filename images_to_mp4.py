@@ -36,8 +36,13 @@ def images_to_mp4(directory, mp4_file, fps=25, steps_per_frame=25):
     # Get the number of pages
     num_pages = len(files)
 
+    # Check if the file exists and delete it if it does
+    if os.path.exists(mp4_file):
+        os.remove(mp4_file)
+
     # Create a video writer
     fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video = cv2.VideoWriter(mp4_file, fourcc, fps, (width, height))
 
     # Loop through the pages
@@ -45,6 +50,11 @@ def images_to_mp4(directory, mp4_file, fps=25, steps_per_frame=25):
         # Get the path of the next image
         end_path = os.path.join(directory, files[i])
         end_img = cv2.imread(end_path)
+
+        if end_img.shape != start_img.shape:
+            print(f'Image {end_path} is not the same size as the first image. Skipping')
+            continue
+
         print(f'Processing page {i+1}/{num_pages} {start_path} -> {end_path}')
 
         # Process the frames
@@ -64,7 +74,7 @@ if __name__ == '__main__':
     # Define the arguments
 
     args = {
-        'directory': 'output/meta-pixel_IMG_1069_2025-01-07_27',
+        'directory': 'output/meta-pixel_IMG_1069_2025-01-07',
         'mp4_file': 'output/IMG_1069.mp4',
         'fps': 12,
         'steps_per_frame': 32
