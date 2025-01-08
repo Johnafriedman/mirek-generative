@@ -5,6 +5,8 @@ import numpy as np
 import pygame
 import sys
 
+UI_SIZE = 1280
+
 def apply_fisheye(image, c_x, c_y, f_x, f_y, strength=1.0):
     """Applies a fisheye effect to an image using cv2.fisheye.initUndistortRectifyMap."""
     height, width = image.shape[:2]
@@ -50,16 +52,22 @@ def main(input_path):
         
     else:    
         # Read the image
-        image = cv2.imread(input_path)
-        if image is None:
+        full_image = cv2.imread(input_path)
+        if full_image is None:
             print(f"Error: Unable to load image {input_path}")
             return
 
         # set size of image. algorithem generates a square image
-        size = min(image.shape[:2])
-
+        full_size = min(full_image.shape[:2])
+        if full_size > UI_SIZE:
+            size = UI_SIZE
+        else:
+            size = full_size
         dim = (size, size)
-        image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+        if full_size == size:
+            image = full_image
+        else:
+            image = cv2.resize(full_image, dim, interpolation=cv2.INTER_AREA)
 
     pygame.init()
     height, width = image.shape[:2]
@@ -127,6 +135,16 @@ def main(input_path):
                 image_date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
                 if event.key == pygame.K_s:
                     filename = f"{output_dir}/fisheye_{image_name}_{image_date}.png"
+                    # scale cx and cy to full size image
+                    sc_x = int(c_x * full_image.shape[1] / image.shape[1])
+                    sc_y = int(c_y * full_image.shape[0] / image.shape[0])
+                    # scale focal length to full size image
+                    sf_x = int(f_x * full_image.shape[1] / image.shape[1])
+                    sf_y = int(f_y * full_image.shape[0] / image.shape[0])
+                    # scale full size image to full size square
+                    full_image = cv2.resize(full_image, (full_size, full_size), interpolation=cv2.INTER_AREA)
+                    # create full sized fisheye image
+                    fisheye_image = apply_fisheye(full_image, sc_x, sc_y, sf_x, sf_y, strength)
                     # swap x and y coords for writing image
                     fisheye_image = np.swapaxes(fisheye_image, 0, 1)
 
