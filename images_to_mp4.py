@@ -56,7 +56,11 @@ def images_to_mp4(args):
     # remove any system files
     files = [f for f in files if not f.startswith('.')]
     start_path = os.path.join(directory, files[0])
-    first_img = start_img = cv2.imread(start_path)
+    start_img = cv2.imread(start_path)
+    # crop so height and witdth are divisible by 2
+    start_img = start_img[:start_img.shape[0]//2*2, :start_img.shape[1]//2*2]   
+
+    first_img = start_img
     # Get the height and width of the images
     height, width, _ = start_img.shape
 
@@ -73,6 +77,7 @@ def images_to_mp4(args):
         # Get the path of the next image
         end_path = os.path.join(directory, files[i])
         end_img = cv2.imread(end_path)
+        end_img = end_img[:end_img.shape[0]//2*2, :end_img.shape[1]//2*2]   
 
         if end_img.shape != start_img.shape:
             print(f'Image {end_path} is not the same size as the first image. Skipping')
@@ -101,8 +106,8 @@ if __name__ == '__main__':
     # Define the arguments
 
     args = {
-        'directory': 'output/meta-pixel_IMG_1069_2025-01-07',
-        'mp4_file': 'output/IMG_1069.mp4',
+        'directory': 'output/PirouetteTrio',
+        'mp4_file': 'output/PirouetteTrio.mp4',
         'fps': 12,
         'steps_per_frame': 36,
         'pre_fade_delay': 5,
