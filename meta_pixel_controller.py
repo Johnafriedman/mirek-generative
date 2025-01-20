@@ -44,6 +44,7 @@ class Model:
         self.prob_shape_destination_equals_source = 1
         self.transparent_threshold = 128
         self.transparent_above = True
+        self.use_gradient = True
 
 
         # Edge detection
@@ -278,6 +279,7 @@ class Controller(tk.Tk):
     def load_color_widgets(self):
         self.scale_transparent_threshold.set(self.model.transparent_threshold)
         self.var_transparent_above.set(self.model.transparent_above)
+        self.var_use_gradient.set(self.model.use_gradient)
         self.scale_accent_color_percentage.set(self.model.accent_color_percentage)
         self.load_gradient_widgets()
 
@@ -360,7 +362,7 @@ class Controller(tk.Tk):
 
         # self.model.accent_color_percentage = float(self.entry_accent_color_percentage.get())
         self.model.transparent_above = self.var_transparent_above.get()
-
+        self.model.use_gradient = self.var_use_gradient.get()
 # 
 # Initialize the frames
 # 
@@ -844,31 +846,33 @@ class Controller(tk.Tk):
         self.init_color_widgets()
 
     def init_color_widgets(self):
-        # Label for transparent_threshold   
-        self.label_transparent_threshold = tk.Label(self.color_sub_frame2, text="Transparent Threshold")
-        self.label_transparent_threshold.grid(row=0, column=0, padx=10, pady=0, sticky="w")
-
-        # Scale for accent color percentage
-        self.scale_transparent_threshold = tk.Scale(self.color_sub_frame2, from_=0, to=255, resolution=1, orient=tk.HORIZONTAL)
-        self.scale_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
-        self.scale_transparent_threshold.set(self.model.transparent_threshold)
-        
-        # self.entry_transparent_threshold = tk.Entry(self.color_sub_frame2)
-        # self.entry_transparent_threshold.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
-        # self.entry_transparent_threshold.insert(0, self.model.transparent_threshold)
-
+        # Label for accent color percentage
         self.label_accent_color_percentage = tk.Label(self.color_sub_frame2, text="Accent Color %")
-        self.label_accent_color_percentage.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+        self.label_accent_color_percentage.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
         # Scale for accent color percentage
         self.scale_accent_color_percentage = tk.Scale(self.color_sub_frame2, from_=0.01, to=1.0, resolution=0.01, orient=tk.HORIZONTAL)
-        self.scale_accent_color_percentage.grid(row=4, column=1, padx=0, pady=0, sticky="ew")
+        self.scale_accent_color_percentage.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
         self.scale_accent_color_percentage.set(self.model.accent_color_percentage)
+
+        # Label for transparent_threshold   
+        self.label_transparent_threshold = tk.Label(self.color_sub_frame2, text="Transparent Threshold")
+        self.label_transparent_threshold.grid(row=1, column=0, padx=10, pady=0, sticky="w")
+
+        # Scale for accent color percentage
+        self.scale_transparent_threshold = tk.Scale(self.color_sub_frame2, from_=0, to=255, resolution=1, orient=tk.HORIZONTAL)
+        self.scale_transparent_threshold.grid(row=1, column=1, padx=0, pady=0, sticky="ew")
+        self.scale_transparent_threshold.set(self.model.transparent_threshold)
 
         # Checkbutton for transparent_above
         self.var_transparent_above = tk.BooleanVar(value=self.model.transparent_above)
         self.check_transparent_above = tk.Checkbutton(self.color_sub_frame2, text="Transparent above", variable=self.var_transparent_above)
         self.check_transparent_above.grid(row=2, column=0, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for use_gradient
+        self.var_use_gradient = tk.BooleanVar(value=self.model.use_gradient)
+        self.check_use_gradient = tk.Checkbutton(self.color_sub_frame2, text="Use Gradient", variable=self.var_use_gradient)
+        self.check_use_gradient.grid(row=3, column=0, padx=10, pady=0, sticky="w")
 
         # initialize the fill color widgets
         self.init_color_widget(self.color_sub_frame1, 0, 0, "fill", 0)

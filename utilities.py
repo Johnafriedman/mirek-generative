@@ -220,14 +220,23 @@ def make_transparent(image, luminance_threshold, above=True):
 
   return transparent_image
 
-def random_color(name_space, name):
+def random_color(name_space, name, use_gradient=True):
   c = name_space[f"{name}_color"]
-  # gven two colors return a random color from a gradient between them
   color1, color2 = c
-  random_factor = random.random()
-  random_color = tuple(
-      int(color1[i] + (color2[i] - color1[i]) * random_factor) for i in range(4)
-  )
+  if use_gradient:
+    random_factor = random.random()
+    # gven two colors return a random color from a gradient between them
+    random_color = tuple(
+        int(color1[i] + (color2[i] - color1[i]) * random_factor) for i in range(4)
+    )
+  else:
+    # given two colors return a random color  where each compoment is a random value between the two colors
+    random_color = tuple(
+        int(color1[i] + (color2[i] - color1[i]) * random.random()) for i in range(4)
+    )
+    
+
+
   return random_color
   
 

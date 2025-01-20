@@ -75,8 +75,8 @@ def visualizeClusters(m, image, clusters):
               y=centroid[0],
               width=radius*2,
               height=radius*2,
-              fill=random_color(vars(m), "cluster"),
-              outline=random_color(vars(m), "outline"),
+              fill=random_color(vars(m), "cluster", m.use_gradient),
+              outline=random_color(vars(m), "outline", m.use_gradient),
               outline_width=2,
               transforms=transforms
           )
@@ -247,7 +247,7 @@ def meta_pixel(m, pdf_canvas):
               dx = sx
               dy = sy
 
-          fill = random_color(vars(m), "fill") if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
+          fill = random_color(vars(m), "fill", m.use_gradient) if random.random() > m.accent_color_percentage else random_color(vars(m), "accent")
 
           transforms = []
           if m.do_scale: transforms.append({"name":"scale", "scale_factor": m.scale_factor})
@@ -261,7 +261,7 @@ def meta_pixel(m, pdf_canvas):
               width=width,
               height=height,
               fill=fill,
-              outline=random_color(vars(m), "outline"),
+              outline=random_color(vars(m), "outline", m.use_gradient),
               outline_width=2,
               transforms=transforms
           )
