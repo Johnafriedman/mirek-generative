@@ -23,6 +23,30 @@ def apply_fisheye(image, c_x, c_y, f_x, f_y, strength=1.0):
 
     return fisheye_image
 
+def create_video(fish_frame_params, filename, width, height):
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    video = cv2.VideoWriter(filename, fourcc, 20, (width, height))
+    for params in fish_frame_params:
+        c_x, c_y, f_x, f_y, strength = params
+        fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
+        video.write(fisheye_image)
+    video.release()
+
+def scale_to_full_sized_image(full_image, image, full_size, c_x, c_y, f_x, f_y, strength):
+    # scale full size image to full size square
+    full_image = cv2.resize(full_image, (full_size, full_size), interpolation=cv2.INTER_AREA)
+    # scale cx and cy to full size image
+    sc_x = int(c_x * full_image.shape[1] / image.shape[1])
+    sc_y = int(c_y * full_image.shape[0] / image.shape[0])
+    # scale focal length to full size image
+    sf_x = int(f_x * full_image.shape[1] / image.shape[1])
+    sf_y = int(f_y * full_image.shape[0] / image.shape[0])
+    # create full sized fisheye image
+    fisheye_image = apply_fisheye(full_image, sc_x, sc_y, sf_x, sf_y, strength)
+    # swap x and y coords for writing image
+    fisheye_image = np.swapaxes(fisheye_image, 0, 1)
+    return fisheye_image
+    
 def main(input_path):
     """Displays an image using Pygame."""
 
@@ -60,11 +84,11 @@ def main(input_path):
         # set size of image. algorithem generates a square image
         full_size = min(full_image.shape[:2])
         if full_size > UI_SIZE:
-            size = UI_SIZE
+            output_size = UI_SIZE
         else:
-            size = full_size
-        dim = (size, size)
-        if full_size == size:
+            output_size = full_size
+        dim = (output_size, output_size)
+        if full_size == output_size:
             image = full_image
         else:
             image = cv2.resize(full_image, dim, interpolation=cv2.INTER_AREA)
@@ -103,8 +127,8 @@ def main(input_path):
     fps = 0
     regenerate = False
 
+    fish_frame_params = []
     fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
-
 
     while running:
         if is_video:
@@ -135,30 +159,28 @@ def main(input_path):
                 image_date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
                 if event.key == pygame.K_s:
                     filename = f"{output_dir}/fisheye_{image_name}_{image_date}.png"
-                    # scale cx and cy to full size image
-                    sc_x = int(c_x * full_image.shape[1] / image.shape[1])
-                    sc_y = int(c_y * full_image.shape[0] / image.shape[0])
-                    # scale focal length to full size image
-                    sf_x = int(f_x * full_image.shape[1] / image.shape[1])
-                    sf_y = int(f_y * full_image.shape[0] / image.shape[0])
-                    # scale full size image to full size square
-                    full_image = cv2.resize(full_image, (full_size, full_size), interpolation=cv2.INTER_AREA)
-                    # create full sized fisheye image
-                    fisheye_image = apply_fisheye(full_image, sc_x, sc_y, sf_x, sf_y, strength)
-                    # swap x and y coords for writing image
-                    fisheye_image = np.swapaxes(fisheye_image, 0, 1)
-
+                    fisheye_image = scale_to_full_sized_image(full_image, image, full_size, c_x, c_y, f_x, f_y, strength)
                     cv2.imwrite(filename, fisheye_image)
                     print(f"Image saved to {filename}")
                 if event.key == pygame.K_SPACE:
                     recording = not recording;
                     print(f"Recording: {recording}")
                     if recording:
-                        fourcc = cv2.VideoWriter_fourcc(*'avc1')
-                        output_path = f"{output_dir}/fisheye_{image_name}_{image_date}.mp4"
-                        print(f"Recording to {output_path}")
-                        video = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
+                        if is_video:
+                            fourcc = cv2.VideoWriter_fourcc(*'avc1')
+                            output_path = f"{output_dir}/fisheye_{image_name}_{image_date}.mp4"
+                            print(f"Recording to {output_path}")
+                            video = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
+                        else:
+                            fish_frame_params = []
                     else:
+                        if is_video:
+                            video.release()
+                        else:
+                            # generate frames of video using parameters list and write to video
+                            filename = f"{output_dir}/fisheye_{image_name}_{image_date}.mp4"
+                            create_video(fish_frame_params, filename, width, height)
+                            fish_frame_params = []
                         video.release()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
@@ -193,18 +215,31 @@ def main(input_path):
             image_rgb = cv2.cvtColor(fisheye_image, cv2.COLOR_BGR2RGB)
             image_surface = pygame.surfarray.make_surface(image_rgb)
             regenerate = False
-            # calculate frames per second
-            fps = pygame.time.get_ticks() / 1000
+
             if recording:
-                video.write(fisheye_image)
+                if is_video:
+                    video.write(fisheye_image)  # Write the frame to the video
+                else:
+                    # add parameters to parameters list
+                    fish_frame_params.append((c_x, c_y, f_x, f_y, strength))
 
         screen.blit(image_surface, (0, 0))
 
         pygame.display.flip()
 
     if recording:
-        video.release()
-        print(f"Recording stopped")
+        if is_video:
+            video.release()
+        else:
+            # generate frames of video using parameters list and write to video
+            filename = f"{output_dir}/fisheye_{image_name}_{image_date}.mp4"
+            fourcc = cv2.VideoWriter_fourcc(*'avc1')
+            video = cv2.VideoWriter(filename, fourcc, 20, (width, height))
+            for params in fish_frame_params:
+                c_x, c_y, f_x, f_y, strength = params
+                fisheye_image = apply_fisheye(image, c_x, c_y, f_x, f_y, strength)
+                video.write(fisheye_image)
+            video.release()
 
     pygame.quit()
     sys.exit() 
@@ -215,7 +250,7 @@ if __name__ == "__main__":
         input_path = sys.argv[1]
 
     else:
-        input_path = "input/GermanWheel.mp4"  # Replace with the path to your image file
+        input_path = "input/king.png"  # Replace with the path to your image file
 
     if len(sys.argv) > 2:
         output_dir = sys.argv[2]
