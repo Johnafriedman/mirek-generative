@@ -1,0 +1,22 @@
+import fitz  # PyMuPDF
+import io
+from PIL import Image
+
+def extract_images_from_pdf(pdf_path, output_folder):
+    pdf_document = fitz.open(pdf_path)
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        image_list = page.get_images(full=True)
+        for img_index, img in enumerate(image_list):
+            xref = img[0]
+            base_image = pdf_document.extract_image(xref)
+            image_bytes = base_image["image"]
+            image_ext = base_image["ext"]
+            image = Image.open(io.BytesIO(image_bytes))
+            image = image.convert("RGB")
+            image.save(f"{output_folder}/page_{page_num+1}_img_{img_index+1}.png", dpi=(144, 144))
+
+if __name__ == "__main__":
+    pdf_path = "output/PlotterDance/plotter_dance.pdf"
+    output_folder = "output/PlotterDance"
+    extract_images_from_pdf(pdf_path, output_folder)
