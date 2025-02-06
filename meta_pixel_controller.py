@@ -23,12 +23,13 @@ class Model:
 
         # mesh
         self.do_mesh = False
-        self.use_mask = True
+        self.use_mask = False
         self.max_mesh_width = 4
         self.max_mesh_height = 6
 
         # perspective transform
         self.do_perspective = False
+        self.mask_perspective = False
 
         self.max_layers = 2
         self.max_shape_layers = 2
@@ -257,8 +258,7 @@ class Controller(tk.Tk):
 
     def load_perspective_widgets(self):
         self.var_do_perspective.set(self.model.do_perspective)
-        self.var_use_mask.set(self.model.use_mask)
-
+        self.var_mask_perspective.set(self.model.mask_perspective)
 
     def load_analsys_widgets(self):
         self.entry_edge_min.delete(0, tk.END)
@@ -318,7 +318,7 @@ class Controller(tk.Tk):
             self.check_use_mask.config(state="normal")
             self.entry_max_mesh_width.config(state="normal")
             self.entry_max_mesh_height.config(state="normal")
-            self.model.use_mask = self.var_use_mask
+            self.model.use_mask = self.var_use_mask.get()
             self.model.max_mesh_width = int(self.entry_max_mesh_width.get())
             self.model.max_mesh_height = int(self.entry_max_mesh_height.get())
         else:
@@ -330,11 +330,11 @@ class Controller(tk.Tk):
     def store_perspective_widgets(self):
         self.model.do_perspective = self.var_do_perspective.get()
         if self.model.do_perspective:
-            self.check_use_mask.config(state="normal")
-            self.model.use_mask = self.var_use_mask.get()
+            self.check_mask_perspective.config(state="normal")
+            self.model.mask_perspective = self.var_mask_perspective.get()
         else:
             # disable the remaining perspective widgets
-            self.check_use_mask.config(state="disabled")
+            self.check_mask_perspective.config(state="disabled")
 
 
 
@@ -576,9 +576,9 @@ class Controller(tk.Tk):
         self.check_do_perspective.grid(row=0, column=1, padx=10, pady=0, sticky="w")
 
         # Checkbutton for use_mask
-        self.var_use_mask = tk.BooleanVar(value=self.model.use_mask)
-        self.check_use_mask = tk.Checkbutton(self.perspective_frame, text="Mask", variable=self.var_use_mask)
-        self.check_use_mask.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+        self.var_mask_perspective = tk.BooleanVar(value=self.model.mask_perspective)
+        self.check_mask_perspective = tk.Checkbutton(self.perspective_frame, text="Mask", variable=self.var_mask_perspective)
+        self.check_mask_perspective.grid(row=0, column=2, padx=10, pady=0, sticky="w")
 
     def init_shapes_frame(self):
         # Create a frame for shapes

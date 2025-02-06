@@ -156,7 +156,7 @@ def do_perspective_transform(model, image):
         out = cv2.warpPerspective(cv2_image, M, (cols, rows))
         # convert the transformed image back to PIL format
         out = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGRA2RGBA))
-        mask = out if m.use_mask else None
+        mask = out if m.mask_perspective else None
         #draw the transformed image on the original using a mask
         return (out, mask)
 
