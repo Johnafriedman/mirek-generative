@@ -153,12 +153,11 @@ def do_perspective_transform(model, image):
                            [random.uniform(0, cols), random.uniform(0, rows)]])
         M = cv2.getPerspectiveTransform(pts1, pts2)
         # apply the perspective transform
-        out = cv2.warpPerspective(cv2_image, M, (cols, rows))
+        out = cv2.warpPerspective(cv2_image, M, (cols, rows), borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255, 0))
         # convert the transformed image back to PIL format
         out = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGRA2RGBA))
-        mask = out if m.mask_perspective else None
         #draw the transformed image on the original using a mask
-        return (out, mask)
+        return out
 
 def meta_pixel(m, pdf_canvas):
 
@@ -218,13 +217,14 @@ def meta_pixel(m, pdf_canvas):
       if m.do_mesh:
         im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
         out, mask = do_mesh_transform(m, im)
-        image.paste(out, None, mask)
+        image.paste(out, None, out)
 
       # Apply the perspective transform
       if m.do_perspective:
-        im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
-        out, mask = do_perspective_transform(m, im)
-        image.paste(out, None, mask)
+        im =  make_transparent(image, m.transparent_threshold, above=m.transparent_above) if m.mask_perspective else image.convert('RGBA')
+
+        out = do_perspective_transform(m, im)
+        image.paste(out, None, out)
         
       # Create a new image with the mesh
       # if m.save_layer_images:
