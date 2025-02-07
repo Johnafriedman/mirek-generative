@@ -136,9 +136,8 @@ def do_mesh_transform(model, image):
         mesh = create_randomized_aligned_mesh(width,height,image.width,image.height)
         # Create a new image with the mesh
         out = image.transform(image.size, MeshTransform(mesh))
-        mask = out if m.use_mask else None
         #draw the transformed image on the original using a mask
-        return (out, mask)
+        return out
 
 def do_perspective_transform(model, image):
         m = model
@@ -215,8 +214,8 @@ def meta_pixel(m, pdf_canvas):
 
       # Apply the mesh transform
       if m.do_mesh:
-        im = make_transparent(image, m.transparent_threshold, above=m.transparent_above)
-        out, mask = do_mesh_transform(m, im)
+        im = make_transparent(image, m.transparent_threshold, above=m.transparent_above) if m.mask_perspective else image.convert('RGBA')
+        out = do_mesh_transform(m, im)
         image.paste(out, None, out)
 
       # Apply the perspective transform
