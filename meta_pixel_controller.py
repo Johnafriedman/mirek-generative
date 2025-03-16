@@ -406,7 +406,7 @@ class Controller(tk.Tk):
             return file_path
         
     def select_input_file(self):
-        files = [("Image files", ".png .jpeg .jpg"), ("Video files", ".mp4 .mov")]
+        files = [("Image files", ".png .jpeg .jpg .tiff .tif"), ("Video files", ".mp4 .mov")]
         input_path = filedialog.askopenfilename(title="Select input File", filetypes=files, initialdir=self.model.input_dir)
         if not input_path:
             return
