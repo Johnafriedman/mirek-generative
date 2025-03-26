@@ -234,11 +234,21 @@ def random_color(name_space, name, use_gradient=True):
     random_color = tuple(
         int(color1[i] + (color2[i] - color1[i]) * random.random()) for i in range(4)
     )
-    
-
 
   return random_color
-  
+
+class Illustration:
+  def __init__(self, output_dir, image_name, image_date, file_index):
+        self.index = 0
+        self.output_dir = output_dir
+        self.image_name = image_name
+        self.image_date = image_date
+        self.file_index = file_index
+        
+  def save(self, image):
+    path = f"{self.output_dir}/illustration_{self.image_name}_{self.image_date}_{self.file_index}_{self.index}.png"
+    image.save(path)
+    self.index += 1
 
 class ImageWindow:
     def __init__(self, parent, image, model):
