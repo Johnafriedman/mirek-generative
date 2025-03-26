@@ -88,6 +88,7 @@ class Model:
         self._initialized = True
         self._existing_attributes = set(self.__dict__.keys())
 
+        self.create_illustrations = False
 
         # Override __setattr__ at runtime
         self.__setattr__ = self.custom_setattr
@@ -201,6 +202,7 @@ class Controller(tk.Tk):
         self.var_create_pdf.set(self.model.create_pdf)
         self.var_show_pdf.set(self.model.show_pdf)
         self.var_show_image.set(self.model.show_image)
+        self.var_create_illustrations.set(self.model.create_illustrations)
 
 
     def load_path_widgets(self):
@@ -311,6 +313,7 @@ class Controller(tk.Tk):
             #disable the show_pdf checkbutton
             self.check_show_pdf.config(state="disabled")    
         self.model.show_image = self.var_show_image.get()
+        self.model.create_illustrations = self.var_create_illustrations.get()
 
     def store_mesh_widgets(self):
         self.model.do_mesh = self.var_do_mesh.get()
@@ -472,21 +475,6 @@ class Controller(tk.Tk):
         self.entry_files.grid(row=0, column=1, padx=0, pady=0, sticky="ew")
         self.entry_files.insert(0, self.model.files)
 
-        # Checkbutton for create_pdf
-        self.var_create_pdf = tk.BooleanVar(value=self.model.create_pdf)
-        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf, command=self.store_output_options_widgets)
-        self.check_create_pdf.grid(row=0, column=2, padx=10, pady=0, sticky="w")
-
-        # Checkbutton for show_pdf
-        self.var_show_pdf = tk.BooleanVar(value=self.model.show_pdf)
-        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf, command=self.store_output_options_widgets)
-        self.check_show_pdf.grid(row=0, column=3, padx=10, pady=0, sticky="w")
-
-        # Checkbutton for show_image
-        self.var_show_image = tk.BooleanVar(value=self.model.show_image)
-        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image, command=self.store_output_options_widgets)
-        self.check_show_image.grid(row=0, column=4, padx=10, pady=0, sticky="w")
-
         #AskOpenFile preferences file
         self.button_save = tk.Button(self.output_options_frame, text="Save Preferences", command=self.select_save_prefs)
         self.button_save.grid(row=0, column=5, padx=10, pady=0, sticky="w")
@@ -494,6 +482,31 @@ class Controller(tk.Tk):
         #AskOpenFile preferences file
         self.button_load = tk.Button(self.output_options_frame, text="Load Preferences", command=self.select_load_prefs)   
         self.button_load.grid(row=0, column=6, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for create_pdf
+        self.var_create_pdf = tk.BooleanVar(value=self.model.create_pdf)
+        self.check_create_pdf = tk.Checkbutton(self.output_options_frame, text="Create PDF", variable=self.var_create_pdf, command=self.store_output_options_widgets)
+        self.check_create_pdf.grid(row=1, column=3, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for show_pdf
+        self.var_show_pdf = tk.BooleanVar(value=self.model.show_pdf)
+        self.check_show_pdf = tk.Checkbutton(self.output_options_frame, text="Show PDF", variable=self.var_show_pdf, command=self.store_output_options_widgets)
+        self.check_show_pdf.grid(row=1, column=4, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for show_image
+        self.var_show_image = tk.BooleanVar(value=self.model.show_image)
+        self.check_show_image = tk.Checkbutton(self.output_options_frame, text="Show Image", variable=self.var_show_image, command=self.store_output_options_widgets)
+        self.check_show_image.grid(row=1, column=5, padx=10, pady=0, sticky="w")
+
+        # Checkbutton for create_illustrations
+        self.var_create_illustrations = tk.BooleanVar(value=self.model.create_illustrations)
+        self.check_create_illustrations = tk.Checkbutton(
+            self.output_options_frame, 
+            text="Create Illustrations", 
+            variable=self.var_create_illustrations, 
+            command=self.store_output_options_widgets
+        )
+        self.check_create_illustrations.grid(row=1, column=6, padx=10, pady=0, sticky="w")
 
     def select_save_prefs(self):
         pref_file = filedialog.asksaveasfilename(initialdir='.', title="Save Preferences", filetypes=([("Prefs files", "*.prefs")]), initialfile=self.model.image_name)
@@ -531,12 +544,12 @@ class Controller(tk.Tk):
         # Checkbutton for do_mesh
         self.var_do_mesh = tk.BooleanVar(value=self.model.do_mesh)
         self.check_do_mesh = tk.Checkbutton(self.mesh_frame, text="Mesh", variable=self.var_do_mesh, command=self.store_mesh_widgets)
-        self.check_do_mesh.grid(row=0, column=1, padx=10, pady=0, sticky="w")
+        self.check_do_mesh.grid(row=0, column=0, padx=10, pady=0, sticky="e")
 
         # Checkbutton for use_mask
         self.var_use_mask = tk.BooleanVar(value=self.model.use_mask)
         self.check_use_mask = tk.Checkbutton(self.mesh_frame, text="Mask", variable=self.var_use_mask)
-        self.check_use_mask.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+        self.check_use_mask.grid(row=0, column=1, padx=10, pady=0, sticky="e")
 
         # Label for max_mesh_width
         self.label_max_mesh_width = tk.Label(self.mesh_frame, text="Max Columns")
@@ -573,17 +586,17 @@ class Controller(tk.Tk):
         # Checkbutton for do_perspective
         self.var_do_perspective = tk.BooleanVar(value=self.model.do_perspective)
         self.check_do_perspective = tk.Checkbutton(self.perspective_frame, text="perspective", variable=self.var_do_perspective, command=self.store_perspective_widgets)
-        self.check_do_perspective.grid(row=0, column=1, padx=10, pady=0, sticky="w")
+        self.check_do_perspective.grid(row=0, column=0, padx=10, pady=0, sticky="w")
 
         # Checkbutton for use_mask
         self.var_mask_perspective = tk.BooleanVar(value=self.model.mask_perspective)
         self.check_mask_perspective = tk.Checkbutton(self.perspective_frame, text="Mask", variable=self.var_mask_perspective)
-        self.check_mask_perspective.grid(row=0, column=2, padx=10, pady=0, sticky="w")
+        self.check_mask_perspective.grid(row=0, column=1, padx=10, pady=0, sticky="w")
 
     def init_shapes_frame(self):
         # Create a frame for shapes
         self.shapes_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.shapes_frame.grid(row=8, column=0, padx=10, pady=10, sticky="nsew")
+        self.shapes_frame.grid(row=9, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the shapes frame
         for i in range(13):
@@ -754,7 +767,7 @@ class Controller(tk.Tk):
     def init_analysis_frame(self):
         # Create a frame for analysis
         self.analysis_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.analysis_frame.grid(row=15, column=0, padx=10, pady=10, sticky="nsew")
+        self.analysis_frame.grid(row=16, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the analysis frame
         for i in range(5):
@@ -828,7 +841,7 @@ class Controller(tk.Tk):
     def init_color_frame(self):
         # Create a frame for colors
         self.color_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightgrey")
-        self.color_frame.grid(row=16, column=0, padx=10, pady=10, sticky="nsew")
+        self.color_frame.grid(row=17, column=0, padx=10, pady=10, sticky="nsew")
 
         # Configure grid weights for the color frame
         for i in range(5):
@@ -969,7 +982,7 @@ class Controller(tk.Tk):
     def init_action_frame(self):
         # Create a frame for actions
         self.action_frame = tk.Frame(self.content_frame, relief="ridge", bg="lightcoral")
-        self.action_frame.grid(row=23, column=0, padx=10, pady=10, sticky="ews")
+        self.action_frame.grid(row=24, column=0, padx=10, pady=10, sticky="ews")
         self.action_frame.grid_columnconfigure(0, weight=1)
         self.action_frame.grid_columnconfigure(1, weight=1)
         self.action_frame.grid_columnconfigure(2, weight=1)
