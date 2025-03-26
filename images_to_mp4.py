@@ -25,13 +25,13 @@ def add_pre_fade_delay(process, img, pre_fade_delay_frames):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     for j in range(pre_fade_delay_frames):
-        print(f'Adding pre-fade delay {j+1}/{pre_fade_delay_frames}')
+        # print(f'Adding pre-fade delay {j+1}/{pre_fade_delay_frames}')
         write_frame(process, img)
 
 def process_frame(process, start_img, end_img, steps_per_frame):
     # Interpolate the images
     for j in range(steps_per_frame):
-        print(f'Processing frame {j+1}/{steps_per_frame}')
+        # print(f'Processing frame {j+1}/{steps_per_frame}')
         alpha = j / steps_per_frame
         img = cv2.addWeighted(start_img, 1 - alpha, end_img, alpha, 0)
 
@@ -55,6 +55,8 @@ def images_to_mp4(args):
     files = os.listdir(directory)
     # remove any system files
     files = [f for f in files if not f.startswith('.')]
+    files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)))
+    # Get the path of the first image
     start_path = os.path.join(directory, files[0])
     start_img = cv2.imread(start_path)
     # crop so height and witdth are divisible by 2
@@ -106,8 +108,8 @@ if __name__ == '__main__':
     # Define the arguments
 
     args = {
-        'directory': 'output/PirouetteTrio',
-        'mp4_file': 'output/PirouetteTrio.mp4',
+        'directory': 'output/pixel_Rhythms_2 Eclipses_6828_3/Illustrations',
+        'mp4_file': 'output/pixel_Rhythms_2 Eclipses_6828_3/Illustrations_Rhythms_2_Eclipses_6828_3.mp4',
         'fps': 12,
         'steps_per_frame': 36,
         'pre_fade_delay': 5,
