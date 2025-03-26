@@ -20,7 +20,7 @@ import cv2
 from transforms import create_randomized_aligned_mesh
 
 from constants import *
-from utilities import make_transparent, transformed_shape, transformed_centroid, bounding_box_size, random_color
+from utilities import make_transparent, transformed_shape, transformed_centroid, bounding_box_size, random_color, Illustration
 
 
 def visualizeClusters(m, image, clusters):
@@ -188,6 +188,12 @@ def meta_pixel(m, pdf_canvas):
       image = Image.open(m.input_path)
       image = image.convert('RGBA')
 
+    if m.create_illustrations:
+    #   initialize the illustration path
+      illustration = Illustration(m.output_dir, m.image_name, m.image_date, file)
+      # save the image to the illustration path
+      illustration.save(image)
+      
     min_width = image.width * m.min_width_percentage
     min_height = image.height * m.min_height_percentage
     max_width = image.width * m.max_width_percentage/GOLDEN_RATIO
@@ -209,6 +215,7 @@ def meta_pixel(m, pdf_canvas):
     if len(edges) > 0:
       clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
       image = visualizeClusters(m, image, clusters)
+      if m.create_illustrations: illustration.save(image)
 
     for _ in range(0, m.max_layers):
 
@@ -217,6 +224,8 @@ def meta_pixel(m, pdf_canvas):
         im = make_transparent(image, m.transparent_threshold, above=m.transparent_above) if m.mask_perspective else image.convert('RGBA')
         out = do_mesh_transform(m, im)
         image.paste(out, None, out)
+        if m.create_illustrations: illustration.save(image)
+
 
       # Apply the perspective transform
       if m.do_perspective:
@@ -224,6 +233,7 @@ def meta_pixel(m, pdf_canvas):
 
         out = do_perspective_transform(m, im)
         image.paste(out, None, out)
+        if m.create_illustrations: illustration.save(image)
         
       # Create a new image with the mesh
       # if m.save_layer_images:
@@ -266,17 +276,9 @@ def meta_pixel(m, pdf_canvas):
           )
 
           image.paste(out, (dx, dy), mask)
-          # if m.save_layer_images:
-          #   overlay.paste(out, (dx, dy), mask)
 
-      # if m.save_layer_images:
-      #   filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}_{_}.png"
-      #   overlay.save(filename)
-
-    # if len(edges) > 0:
-    #   clusters = findClusters(edges, min_samples=m.min_samples, eps=m.eps)
-    #   image = visualizeClusters(m, image, clusters)
-          
+      if m.create_illustrations: illustration.save(image)
+    
     filename = f"{m.output_dir}/meta-pixel_{m.image_name}_{m.image_date}_{file}.png"
 
     if m.is_video:
@@ -289,6 +291,7 @@ def meta_pixel(m, pdf_canvas):
         break
 
     else:
+
       m._image = image
       m._image.save(filename)
 
