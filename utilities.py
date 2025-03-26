@@ -32,8 +32,8 @@ def transformed_centroid(image, x, y, width, height, fill, outline, outline_widt
 
   # Draw the shape on the mask (white color fills the ellipse)
   # adjust the fill it is 8 if the width is greater than 90% of the image width and 255 if width is less than 10% of the image width
-  if width > .9*image.width:
-    mask_fill = 32
+  if width > .5*image.width:
+    mask_fill = 16
   elif width < .1*image.width:
     mask_fill = 255
   # otherwise it varies smoothly between 8 and 255
